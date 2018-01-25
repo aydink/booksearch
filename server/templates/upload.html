@@ -1,0 +1,157 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <title>Yeni kitap ekle</title>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="/static/bootstrap-4/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #fff;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <form class="form-horizontal" method="POST" enctype="multipart/form-data" action="/api/addbook">
+
+
+            <div class="form-group">
+                <div class="row">
+                    <div class="col-sm-3">
+                        <label class="control-label" for="serial">Yayın Numarası:</label>
+                    </div>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control" id="serial" name="serial" value="" placeholder="MY 75-1(A)">
+                        <div class="text-danger"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="row">
+                    <div class="col-sm-3">
+                        <label class="control-label" for="title">Yayın Adı:</label>
+                    </div>
+                    <div class="col-sm-8">
+                        <input type="text" class="form-control" id="title" name="title" value="" placeholder="Kitap adı">
+                        <div class="text-danger"></div>
+                    </div>
+                </div>
+            </div>
+
+
+            <div class="form-group">
+                <div class="row">
+                    <div class="col-sm-3">
+                        <label class="control-label" for="department">Yönergenin Sahibi Komutanlık:</label>
+                    </div>
+                    <div class="col-sm-4">
+                        <select class="form-control" id="department" name="department">
+                            <option></option>
+                            <option value="Müşterek">Müşterek</option>
+                            <option value="K.K.K.">K.K.K.</option>
+                            <option value="Dz.K.K.">Dz.K.K.</option>
+                            <option value="H.K.K.">Hv.K.K.</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="row">
+                    <div class="col-sm-3">
+                        <label class="control-label" for="genre">Yayın Türü:</label>
+                    </div>
+                    <div class="col-sm-4">
+                        <select class="form-control" id="genre" name="genre">
+                            <option></option>
+                            <option value="Yönerge">Yönerge</option>
+                            <option value="Talimname">Talimname</option>
+                            <option value="Konsept">Konsept</option>
+                            <option value="Doktrin">Doktrin</option>
+                            <option value="Yardımcı yayın">Yardımcı yayın</option>
+                            <option value="Yönetmelik">Yönetmelik</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="row">
+                    <div class="col-sm-3">
+                        <label class="control-label" for="category">Kategory:</label>
+                    </div>
+                    <div class="col-sm-4">
+                        <select class="form-control wrapper" id="category" name="category" size="5" multiple>
+                            <option value="Piyade">Piyade</option>
+                            <option value="Tank">Tank</option>
+                            <option value="Topçu">Topçu</option>
+                            <option value="İstihbarat">İstihbarat</option>
+                            <option value="İkmal">İkmal</option>
+                            <option value="Bakım">Bakım</option>
+                            <option value="İstihkam">İstihkam</option>
+                            <option value="Ortak Konular">Ortak Konular</option>
+                            <option value="Harekat">Harekat</option>
+                            <option value="Lojistik">Lolistik</option>
+                            <option value="Personel">Personel</option>
+                            <option value="MEBS">MEBS</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="row">
+                    <div class="col-sm-3">
+                        <label class="control-label" for="year">Basım Yılı:</label>
+                    </div>
+                    <div class="col-sm-2">
+                        <input type="text" class="form-control" id="year" name="year" value="" placeholder="2018">
+                        <div class="text-danger"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="row">
+                    <div class="col-sm-3">
+                        <label class="control-label" for="year">Yüklenecek Dosya:</label>
+                    </div>
+                    <div class="col-sm-2">
+                        <input type="file" class="upload" id="file" name="file" />
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="row">
+                    <div class="col-sm-3">
+                    </div>
+
+                    <div class="col-sm-offset-2 col-sm-8">
+                        <button type="submit" class="btn btn-default">Kitabı Yükle</button>
+                        <input type="hidden" name="id" value="{{.Id}}" />
+                    </div>
+                </div>
+            </div>
+    </div>
+
+
+    </div>
+
+
+
+    </form>
+    </div>
+
+</body>
+
+</html>

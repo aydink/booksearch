@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <title>Hello, world!</title>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="/static/bootstrap-4/css/bootstrap.min.css">
+    <style>
+        body {
+            background-color: #ffffff;
+        }
+
+        div.card {}
+
+        div.facet-header {
+            font-size: large;
+            font-weight: bold;
+        }
+
+        div.facet-item {
+            cursor: pointer;
+        }
+
+        .facet-item:hover {
+            background: #ddd;
+            /* make this whatever you want */
+        }
+
+        span.facet-count {
+            color: #bbb;
+        }
+
+        div.hit-title {
+            font-size: 20px;
+            font-weight: bold;
+            color: blue;
+        }
+
+        div.hit-content {}
+
+        em {
+            font-weight: bold;
+            font-style: normal;
+        }
+
+        dd>em {
+            font-weight: 300;
+            font-style: italic;
+            color: lightblue;
+        }
+
+        .alert {
+            display: inline-block;
+        }
+    </style>
+</head>
+
+<body style="padding-top:60px">
+   
+        <nav class="navbar fixed-top navbar-light bg-light py-2">
+            <a class="navbar-brand" href="/">Resmi yayınlar</a>
+
+            <div class="col-lg-9 py-0">
+                <form class="" method="GET" action="/search/">
+                    <div class="input-group">
+                            <input type="text" class="form-control rounded-0 mr-sm-2" size="60" name="q" id="q" placeholder="" value="{{.q}}">
+
+                        <button class="btn btn-outline-secondary rounded-0" type="submit">Search</button>
+                    </div>
+                </form>
+
+            </div>
+
+            <a class="navbar-brand">Yardım</a>
+        </nav>
+    
+
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-2 card rounded-0">
+                <div class="col-lg-12 px-0">
+
+                    {{if .genreFacet}}
+                    <div class="facet-header">Türü</div>
+                    {{range $facet := .genreFacet}}
+                    <div class="facet-item" onclick="addFilter({key:'genre', value:'{{$facet.Key}}'})">{{$facet.Key}}
+                        <span class="facet-count">({{$facet.DocCount}})</span>
+                    </div>
+                    {{end}}
+                    <br> {{end}} {{if .yearFacet}}
+                    <div class="facet-header">Basım yılı</div>
+                    {{range $facet := .yearFacet}}
+                    <div class="facet-item" onclick="addFilter({key:'year', value:'{{$facet.Key}}'})">{{$facet.Key}}
+                        <span class="facet-count">({{$facet.DocCount}})</span>
+                    </div>
+                    {{end}}
+                    <br> {{end}}
+
+                </div>
+            </div>
+            <div class="col-lg-7">
+                <div class="col-lg-12 card rounded-0">
+                    <div class="row px-1">
+                        {{range .filters}}
+                        <div id="filter-{{index . 0}}" class="alert alert-secondary alert-dismissable mx-1">
+                            <button type="button" class="close" data-dismiss="alert">&times;</button>
+                            {{index . 1}}: {{index . 2}} &nbsp;
+                        </div>
+                        {{end}}
+                    </div>
+
+                    <div class="row">
+                        <div class="col-lg-12 card rounded-0">
+                            <div>
+                                {{if .suggest_text}}
+                                    <em>Bunu mu demek istediniz?</em> <a href="/search/?q={{.suggest_text}}">{{.suggest_text}}</a>
+                                {{end}}
+
+                                <em>Bulunan kayıt sayısı:</em> {{.TotalHits}}
+                            </div>
+                            <br>
+                            {{range $doc := .docs}}
+                            <div class="hit-title">
+                                <a href="/page?page={{$doc.Id}}&q={{$.q}}">{{$doc.Title}}</a>
+                            </div>
+                            <div class="hit-content">({{tohtml $doc.ContentHighlight}})</div>
+                            <br> {{end}} {{if .hasResult}}
+                            <ul class="pagination justify-content-center pagination-sm">
+
+                                {{range $page := .pages}}
+                                <li class="page-item{{if eq $page.Start 0}} disabled{{end}}">
+                                    {{if $page.Active}}
+                                    <a class="page-link" href="#" onclick="gotoPage({{$page.Start}}-10)">Önceki</a>
+                                    {{end}}
+                                </li>
+                                {{end}}
+
+                                {{range $page := .pages}}
+                                <li class="page-item{{if $page.Active}} active{{end}} ">
+                                    <a class="page-link" href="#" onclick="gotoPage({{$page.Start}})">{{$page.Page}}</a>
+                                </li>
+                                {{end}}
+                                <li class="page-item">
+                                {{range $page := .pages}}
+                                <li class="page-item{{if lt (len $.pages) 2}} disabled{{end}}">
+                                    {{if $page.Active}}
+                                    <a class="page-link" href="#" onclick="gotoPage({{$page.Start}}+10)">Sonraki</a>
+                                    {{end}}
+                                </li>
+                                {{end}}
+                            </ul>
+                            {{end}}
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-lg-3 card rounded-0">
+                {{if .hasDefinition}}
+                <h4 style="color:grey; font-style:italic">{{.definition.English}}</h4>
+                <dl>
+                    <dd>{{.definition.Turkish}}</dd>
+                </dl>
+                {{end}}
+            </div>
+        </div>
+
+
+        <!-- Optional JavaScript -->
+        <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+        <script src="/static/jquery/jquery-3.2.1.slim.min.js"></script>
+        <script src="/static/popper/popper.min.js"></script>
+        <script src="/static/bootstrap-4/js/bootstrap.min.js"></script>
+        <script>
+
+            var filters = [];
+            {{ range.filters }} filters.push({ "key": "{{index . 0}}", "value": "{{index . 2}}" });
+            {{ end }}
+
+            function addFilter(filter) {
+
+                for (i = 0; i < filters.length; i++) {
+                    if (filter.key == filters[i].key) {
+                        return;
+                    }
+                }
+                filters.push(filter);
+                console.log(filters);
+
+                // refresh page with new filters
+                refreshFilters();
+            }
+
+            function removeFilter(key) {
+                var temp = [];
+                for (i = 0; i < filters.length; i++) {
+                    console.log("key:", key, filters[i]);
+                    if (key != filters[i].key) {
+                        temp.push(filters[i]);
+                    }
+                }
+
+                filters = temp;
+                // refresh page with new filters
+                refreshFilters();
+            }
+
+            function refreshFilters() {
+                var url = location.protocol + '//' + location.host + "/search/";
+
+                for (i = 0; i < filters.length; i++) {
+                    url = url + encodeURIComponent(filters[i].key) + "/" + encodeURIComponent(filters[i].value) + "/";
+                }
+
+                fullUrl = window.location.search;
+
+                var queryString = fullUrl.substring(fullUrl.indexOf('?') + 1);
+
+                // as we are adding or removing facet filters we need to remove start parameter from querystring
+                queryString = queryString.replace(/&start=[0-9]+/i, "")
+
+                console.log(url + "?" + queryString);
+                window.location = url + "?" + queryString;
+            }
+
+            function gotoPage(start) {
+                var url = location.protocol + '//' + location.host + "/search/";
+
+                for (i = 0; i < filters.length; i++) {
+                    url = url + encodeURIComponent(filters[i].key) + "/" + encodeURIComponent(filters[i].value) + "/";
+                }
+
+                fullUrl = window.location.search;
+
+                var queryString = fullUrl.substring(fullUrl.indexOf('?') + 1);
+                console.log(url + "?" + queryString);
+
+                if (queryString.search(/&start=[0-9]+/i) > -1) {
+                    queryString = queryString.replace(/&start=[0-9]+/i, "&start=" + start)
+                } else {
+                    queryString = queryString + "&start=" + start;
+                }
+
+                window.location = url + "?" + queryString
+            }
+
+            $(document).ready(function () {
+                // focus and move cursor to the end of the text
+                $("#q").focus();
+                $("#q").val($("#q").val());
+
+                {{ range.filters }}
+                $("#filter-{{index . 0}}").on('closed.bs.alert', function () {
+                    removeFilter("{{index . 0}}");
+                });
+                {{ end }}
+            });
+
+        </script>
+</body>
+
+</html>
