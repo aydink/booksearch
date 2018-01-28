@@ -300,8 +300,8 @@ func ProcessPayloadFile(hash string) {
 
 				// insert Payloads into KV store. Use md5 hash and page number as key
 				key := hash + "-" + strconv.Itoa(pageNumber)
-				fmt.Println(key)
-				fmt.Println(tokens)
+				//fmt.Println(key)
+				//fmt.Println(tokens)
 
 				jsonStr, err := json.Marshal(tokens)
 				if err != nil {

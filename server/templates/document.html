@@ -11,10 +11,12 @@
     <link rel="stylesheet" href="/static/bootstrap-4/css/bootstrap.min.css">
     <style>
         body {
-            background-color: #dddddd;
+            background-color: #ffffff;
         }
 
-        div.card {}
+        div.card {
+            border: none;
+        }
 
         div.facet-header {
             font-size: large;
@@ -156,6 +158,9 @@
     
         <div class="row">
             <div class="col-lg-12 card rounded-0">
+                <h3 style="margin: auto;">{{.doc.Serial}} {{.doc.Title}}</h3>
+            </div>
+            <div class="col-lg-12 card rounded-0">
                 <div class="image-container" id="image_container">
                     <img id="page" style="width:100%;" src="/image?page={{.image}}"/>
                     <div onclick="loadPage(-1)" class="nav-button top-left"><</div>
@@ -180,19 +185,24 @@
 
 
     function loadPage(increment) {
+        maxPage = {{.doc.NumPages}};
 
+        currentPage = currentPage + increment;
 
-        if (currentPage == 1) {
+        if (currentPage == 0) {
+            currentPage = 1;
             alert("Kitabın ilk sayfasındasınız!");
+            return;
+        }
+
+        if (currentPage == maxPage) {
+            currentPage = maxPage-1 ;
+            alert("Kitabın son sayfasındasınız!");
             return;
         }
 
         // show loader
         $("#spinner").show();
-
-        currentPage = currentPage + increment;
-
-        //$("#page").attr("src", "/static/images/" + hash + "-" + currentPage + ".png");
 
         var img = $('<img/>');
         //img.attr("src", "/static/images/" + hash + "-" + "-" + currentPage + ".png");
@@ -204,7 +214,6 @@
             // hide loader
             $("#spinner").hide();
         });
-
     }
 
     var facetFilters = {};
@@ -255,19 +264,6 @@
         $('<div style="position:absolute; opacity:0.35; background-color:#ccff15; width:'+width+'px;height:'+heigth+'px;top:'+topt+'px;left:'+left+'px;"/>').appendTo('#image_container');
     }
 
-    function createDivs_old(posting, scale) {
-        XMin = parseInt(posting.XMin*scale);
-        XMax = parseInt(posting.XMax*scale);
-        YMin = parseInt(posting.YMin*scale);
-        YMax = parseInt(posting.YMax*scale);
-        console.log(posting.XMin);
-        width = XMax-XMin;
-        heigth = YMax-YMin;
-        topt = YMin;
-        left = XMin;
-       
-        $('<div style="position:absolute; opacity:0.35; background-color:#ccff15; width:'+width+'px;height:'+heigth+'px;top:'+topt+'px;left:'+left+'px;"/>').appendTo('#image_container');
-    }
 
 </script>
 </body>

@@ -95,6 +95,9 @@ PUT /book
         "page": {
           "type": "integer"
         },
+        "num_pages": {
+          "type": "integer"
+        },
         "year": {
           "type": "integer"
         },

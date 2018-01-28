@@ -93,6 +93,7 @@ func pageHandler(w http.ResponseWriter, r *http.Request) {
 	data["image"] = query
 	data["hash"] = hash
 	data["page"] = page
+	data["doc"] = getDocument(query)
 
 	t.Execute(w, data)
 }

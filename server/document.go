@@ -10,6 +10,7 @@ type Document struct {
 	Category         []string `json:"category"`
 	Year             int      `json:"year"`
 	Page             int      `json:"page"`
+	NumPages         int      `json:"num_pages"`
 	TitleHighlight   string
 	ContentHighlight string
 }

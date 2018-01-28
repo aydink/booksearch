@@ -76,6 +76,12 @@ func query(keywords string, start int, filters [][3]string) map[string]interface
 	aggsGenre := elastic.NewTermsAggregation()
 	aggsGenre = aggsGenre.Field("genre")
 
+	aggsDepartment := elastic.NewTermsAggregation()
+	aggsDepartment = aggsDepartment.Field("department")
+
+	aggsCategory := elastic.NewTermsAggregation()
+	aggsCategory = aggsCategory.Field("category")
+
 	generator := elastic.NewDirectCandidateGenerator("content.trigram")
 	generator = generator.SuggestMode("always")
 	generator = generator.MinWordLength(3)
@@ -100,13 +106,15 @@ func query(keywords string, start int, filters [][3]string) map[string]interface
 	*/
 
 	search := client.Search().
-		Index("book").                       // search in index "twitter"
-		Query(boolQuery).                    // specify the query
-		From(start).Size(10).                // take documents 0-9
-		Pretty(true).                        // pretty print request and response JSON
-		Highlight(higlight).                 // Highlight results
-		Aggregation("Basım yılı", aggsYear). // Aggregation basım yılı
-		Aggregation("Türü", aggsGenre).      // Aggregation basım yılı
+		Index("book").                          // search in index "twitter"
+		Query(boolQuery).                       // specify the query
+		From(start).Size(10).                   // take documents 0-9
+		Pretty(true).                           // pretty print request and response JSON
+		Highlight(higlight).                    // Highlight results
+		Aggregation("Basım yılı", aggsYear).    // Aggregation basım yılı
+		Aggregation("Türü", aggsGenre).         // Aggregation Genre
+		Aggregation("Kuvveti", aggsDepartment). // Aggregation Department
+		Aggregation("Kategori", aggsCategory).  // Aggregation Category
 		Suggester(suggester)
 		//PostFilter(postFilter)               // Apply Post_filter
 
@@ -129,6 +137,8 @@ func query(keywords string, start int, filters [][3]string) map[string]interface
 	docs := make([]Document, 0, 10)
 	yearFacet := make([]Facet, 0)
 	genreFacet := make([]Facet, 0)
+	departmentFacet := make([]Facet, 0)
+	categoryFacet := make([]Facet, 0)
 
 	// Iterate through results
 	for _, hit := range searchResult.Hits.Hits {
@@ -161,6 +171,22 @@ func query(keywords string, start int, filters [][3]string) map[string]interface
 	}
 
 	// Deserialize aggregations
+	if agg, found := searchResult.Aggregations.Terms("Kuvveti"); found {
+		for _, bucket := range agg.Buckets {
+			fmt.Println(bucket.Key, bucket.DocCount)
+			departmentFacet = append(departmentFacet, Facet{bucket.Key.(string), bucket.DocCount})
+		}
+	}
+
+	// Deserialize aggregations
+	if agg, found := searchResult.Aggregations.Terms("Kategori"); found {
+		for _, bucket := range agg.Buckets {
+			fmt.Println(bucket.Key, bucket.DocCount)
+			categoryFacet = append(categoryFacet, Facet{bucket.Key.(string), bucket.DocCount})
+		}
+	}
+
+	// Deserialize aggregations
 	if agg, found := searchResult.Aggregations.Terms("Basım yılı"); found {
 		for _, bucket := range agg.Buckets {
 			fmt.Println(bucket.Key, bucket.DocCount)
@@ -179,6 +205,8 @@ func query(keywords string, start int, filters [][3]string) map[string]interface
 	data["docs"] = docs
 	data["yearFacet"] = yearFacet
 	data["genreFacet"] = genreFacet
+	data["departmentFacet"] = departmentFacet
+	data["categoryFacet"] = categoryFacet
 	data["filters"] = filters
 	data["hasResult"] = hasResult
 
@@ -245,4 +273,38 @@ func queryDictionary(keywords string) (DictionaryEntry, bool) {
 	fmt.Println(entry)
 
 	return entry, hasResult
+}
+
+func getDocument(id string) Document {
+
+	ctx := context.Background()
+
+	url := "http://127.0.0.1:9200"
+
+	//Create an Elasticsearch client
+	client, err := elastic.NewClient(elastic.SetURL(url), elastic.SetSniff(true))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Get document with specified ID
+	doc, err := client.Get().
+		Index("book").
+		Type("novel").
+		Id(id).
+		Do(ctx)
+	if err != nil {
+		log.Println(err)
+	}
+	if doc.Found {
+		t := Document{}
+		source, _ := doc.Source.MarshalJSON()
+		err := json.Unmarshal(source, &t)
+		if err != nil {
+			log.Printf("failed to get document id: %s, error:%s", id, err)
+		}
+		fmt.Printf("%+v", t)
+		return t
+	}
+	return Document{}
 }

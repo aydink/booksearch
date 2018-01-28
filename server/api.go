@@ -121,6 +121,8 @@ func ApiIndexFile(w http.ResponseWriter, r *http.Request) {
 
 		} else {
 			fmt.Println("Content-Type not supported. Expecting application/pdf but found", handler.Header["Content-Type"][0])
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprintln(w, "Content-Type not supported. Expecting application/pdf but found", handler.Header["Content-Type"][0])
 		}
 	}
 }

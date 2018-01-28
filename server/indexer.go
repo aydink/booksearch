@@ -34,7 +34,9 @@ func indexBook(book Book) {
 		return
 	}
 
-	for i := 0; i < len(pages); i++ {
+	numPages := len(pages)
+
+	for i := 0; i < numPages; i++ {
 
 		doc := Document{}
 		doc.Title = book.Title
@@ -44,13 +46,14 @@ func indexBook(book Book) {
 		doc.Genre = book.Genre
 		doc.Year = book.Year
 		doc.Category = book.Category
+		doc.NumPages = numPages
 
 		b, err := json.Marshal(doc)
 		if err != nil {
 			log.Fatalln(err)
 			return
 		}
-		//fmt.Println(string(b))
+		fmt.Println(string(b))
 
 		buf.WriteString("{ \"index\" : { \"_index\" : \"book\", \"_type\" : \"novel\", \"_id\": \"" + book.Hash + "-" + strconv.Itoa(doc.Page) + "\" } }")
 		buf.WriteString("\n")
