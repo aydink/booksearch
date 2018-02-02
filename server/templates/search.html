@@ -1,3 +1,4 @@
+{{define "search"}}
 <!doctype html>
 <html lang="en">
 
@@ -63,70 +64,13 @@
 
 <body style="padding-top:60px">
    
-        <nav class="navbar fixed-top navbar-light bg-light py-2">
-            <a class="navbar-brand" href="/">Resmi yayınlar</a>
-
-            <div class="col-lg-9 py-0">
-                <form class="" method="GET" action="/search/">
-                    <div class="input-group">
-                            <input type="text" class="form-control rounded-0 mr-sm-2" size="60" name="q" id="q" placeholder="" value="{{.q}}">
-
-                        <button class="btn btn-outline-secondary rounded-0" type="submit">Search</button>
-                    </div>
-                </form>
-
-            </div>
-
-            <a class="navbar-brand">Yardım</a>
-        </nav>
-    
+    {{template "navbar_search"}}    
 
     <div class="container">
         <div class="row">
             <div class="col-lg-2 card rounded-0">
                 <div class="col-lg-12 px-0">
-
-                    {{if .genreFacet}}
-                    <div class="facet-header">Türü</div>
-                    {{range $facet := .genreFacet}}
-                    <div class="facet-item" onclick="addFilter({key:'genre', value:'{{$facet.Key}}'})">{{$facet.Key}}
-                        <span class="facet-count">({{$facet.DocCount}})</span>
-                    </div>
-                    {{end}}
-                    <br> 
-                    {{end}} 
-                    
-                    {{if .departmentFacet}}
-                    <div class="facet-header">Kuvveti</div>
-                    {{range $facet := .departmentFacet}}
-                    <div class="facet-item" onclick="addFilter({key:'department', value:'{{$facet.Key}}'})">{{$facet.Key}}
-                        <span class="facet-count">({{$facet.DocCount}})</span>
-                    </div>
-                    {{end}}
-                    <br> 
-                    {{end}} 
-                    
-                    {{if .categoryFacet}}
-                    <div class="facet-header">Kategori</div>
-                    {{range $facet := .categoryFacet}}
-                    <div class="facet-item" onclick="addFilter({key:'category', value:'{{$facet.Key}}'})">{{$facet.Key}}
-                        <span class="facet-count">({{$facet.DocCount}})</span>
-                    </div>
-                    {{end}}
-                    <br> 
-                    {{end}} 
-                    
-                    
-                    {{if .yearFacet}}
-                    <div class="facet-header">Basım yılı</div>
-                    {{range $facet := .yearFacet}}
-                    <div class="facet-item" onclick="addFilter({key:'year', value:'{{$facet.Key}}'})">{{$facet.Key}}
-                        <span class="facet-count">({{$facet.DocCount}})</span>
-                    </div>
-                    {{end}}
-                    <br> 
-                    {{end}}
-
+                    {{template "facet" .}}  
                 </div>
             </div>
             <div class="col-lg-7">
@@ -158,32 +102,7 @@
                             <br> 
                             {{end}} 
                             
-                            {{if .hasResult}}
-                            <ul class="pagination justify-content-center pagination-sm">
-
-                                {{range $page := .pages}}
-                                <li class="page-item{{if eq $page.Start 0}} disabled{{end}}">
-                                    {{if $page.Active}}
-                                    <a class="page-link" href="#" onclick="gotoPage({{$page.Start}}-10)">Önceki</a>
-                                    {{end}}
-                                </li>
-                                {{end}}
-
-                                {{range $page := .pages}}
-                                <li class="page-item{{if $page.Active}} active{{end}} ">
-                                    <a class="page-link" href="#" onclick="gotoPage({{$page.Start}})">{{$page.Page}}</a>
-                                </li>
-                                {{end}}
-                                <li class="page-item">
-                                {{range $page := .pages}}
-                                <li class="page-item{{if lt (len $.pages) 2}} disabled{{end}}">
-                                    {{if $page.Active}}
-                                    <a class="page-link" href="#" onclick="gotoPage({{$page.Start}}+10)">Sonraki</a>
-                                    {{end}}
-                                </li>
-                                {{end}}
-                            </ul>
-                            {{end}}
+                            {{template "pagination" .}}
 
                         </div>
                     </div>
@@ -191,12 +110,7 @@
             </div>
 
             <div class="col-lg-3 card rounded-0">
-                {{if .hasDefinition}}
-                <h4 style="color:grey; font-style:italic">{{.definition.English}}</h4>
-                <dl>
-                    <dd>{{.definition.Turkish}}</dd>
-                </dl>
-                {{end}}
+                {{template "definition" .}}
             </div>
         </div>
 
@@ -295,3 +209,4 @@
 </body>
 
 </html>
+{{end}}

@@ -34,7 +34,8 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 func searchHandler(w http.ResponseWriter, r *http.Request) {
 
 	//t, err := template.ParseFiles("templates/search.html")
-	t := template.Must(template.New("").Funcs(funcMap).ParseFiles("templates/search.html"))
+	//t := template.Must(template.New("").Funcs(funcMap).ParseFiles("templates/search.html", "templates/partial_facet.html", "templates/partial_pagination.html", "templates/partial_definition.html"))
+	t := template.Must(template.New("").Funcs(funcMap).ParseGlob("templates/*.html"))
 
 	keywords := r.URL.Query().Get("q")
 	start := r.URL.Query().Get("start")
@@ -53,7 +54,7 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 		data["definition"], data["hasDefinition"] = queryDictionary(keywords)
 	}
 
-	err = t.ExecuteTemplate(w, "search.html", data)
+	err = t.ExecuteTemplate(w, "search", data)
 	if err != nil {
 		fmt.Println(err)
 	}

@@ -338,6 +338,9 @@ func loadTurkishStems() map[string]string {
 
 func init() {
 
+	// delete bager kv store lcg file
+	os.Remove("data/badger/LOCK")
+
 	dict = loadTurkishStems()
 	fmt.Println("stemmer dictionart loaded:", len(dict), "items")
 
