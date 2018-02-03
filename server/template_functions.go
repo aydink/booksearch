@@ -2,6 +2,7 @@ package main
 
 import (
 	"html/template"
+	"strings"
 )
 
 var funcMap template.FuncMap
@@ -18,10 +19,15 @@ func ToHtml(s string) template.HTML {
 	return template.HTML(s)
 }
 
+func JoinStringSlice(s []string, separator string) string {
+	return strings.Join(s, separator)
+}
+
 func init() {
 	funcMap = template.FuncMap{
 		"inc":    Increment,
 		"add":    Add,
 		"tohtml": ToHtml,
+		"join":   JoinStringSlice,
 	}
 }

@@ -25,7 +25,23 @@ func parseTextFile(hash string) ([]string, error) {
 }
 
 func indexBook(book Book) {
+
 	var buf bytes.Buffer
+	bookJson, err := json.Marshal(book)
+	if err != nil {
+		log.Fatalln(err)
+		return
+	}
+
+	buf.WriteString("{ \"index\" : { \"_index\" : \"ray\", \"_type\" : \"book\", \"_id\": \"" + book.Hash + "\" } }")
+	buf.WriteString("\n")
+	buf.WriteString(string(bookJson))
+	buf.WriteString("\n")
+
+	postToElasticsearch(buf.Bytes())
+
+	// clear buffer
+	buf.Reset()
 
 	pages, err := parseTextFile(book.Hash)
 

@@ -46,8 +46,6 @@
             font-style: normal;
         }
 
-
-
         /* Container holding the image and the text */
         .image-container {
             position: relative;
@@ -210,46 +208,20 @@
         img.on('load', function() {
             var src = $(this).attr('src');
             $("#page").attr("src", "/image?page=" + hash + "-" + currentPage);
-            
             // hide loader
             $("#spinner").hide();
+            // load payloads for highlighting
+            loadPayloads(hash + "-" + currentPage, "{{.q}}");
         });
     }
-
-    var facetFilters = {};
-
-    facetFilters["kuvvet"] = { type: "filter", facet: "kuvvet", value: "value" }
-    facetFilters["tur"] = { type: "selection", facet: "sinif", value: ["piyade", "tank", "ikmal"] }
-
-    function addFilter(filter) {
-        console.log(filter);
-    }
-
 
     $(document).ready(function(){
-        $.get("/api/payloads", { page: "{{.hash}}-{{.page}}", q:"{{.q}}" }, function(data) {
-            //console.log(data)
-
-            
-            scale = 150/72;
-            //scale = scale*1108/1241;
-            scaledWidth = document.getElementById("page").width;
-            originalWidth = document.getElementById("page").naturalWidth;
-            //console.log(originalWidth, scaledWidth);
-            scale = scale*(scaledWidth/originalWidth);
-            //console.log(scale);
-
-            $.each(data, function( index, item ) {
-                $.each(item, function( index, posting ) {
-                    createDivs(posting, scale);
-                });
-            });
-        });
+        loadPayloads("{{.hash}}-{{.page}}", "{{.q}}");
     });
 
-
+    // create highlight for each posting
     function createDivs(posting, scale) {
-        console.log(posting);
+        //console.log(posting);
         
         XMin = parseInt(posting[0]*scale);
         YMin = parseInt(posting[1]*scale);
@@ -261,7 +233,29 @@
         topt = YMin;
         left = XMin;
        
-        $('<div style="position:absolute; opacity:0.35; background-color:#ccff15; width:'+width+'px;height:'+heigth+'px;top:'+topt+'px;left:'+left+'px;"/>').appendTo('#image_container');
+        $('<div class="hl" style="position:absolute; opacity:0.35; background-color:#ccff15; width:'+width+'px;height:'+heigth+'px;top:'+topt+'px;left:'+left+'px;"/>').appendTo('#image_container');
+    }
+
+    function loadPayloads(page, q) { 
+        // clear previous highlights 
+        $(".hl").remove();
+        
+        $.get("/api/payloads", { page: page, q: q }, function(data) {
+                //console.log(data)
+                scale = 150/72;
+                //scale = scale*1108/1241;
+                scaledWidth = document.getElementById("page").width;
+                originalWidth = document.getElementById("page").naturalWidth;
+                //console.log(originalWidth, scaledWidth);
+                scale = scale*(scaledWidth/originalWidth);
+                //console.log(scale);
+
+                $.each(data, function( index, item ) {
+                    $.each(item, function( index, posting ) {
+                        createDivs(posting, scale);
+                    });
+                });
+            });
     }
 
 

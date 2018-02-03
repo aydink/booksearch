@@ -308,3 +308,37 @@ func getDocument(id string) Document {
 	}
 	return Document{}
 }
+
+func getBook(id string) Book {
+
+	ctx := context.Background()
+
+	url := "http://127.0.0.1:9200"
+
+	//Create an Elasticsearch client
+	client, err := elastic.NewClient(elastic.SetURL(url), elastic.SetSniff(true))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Get document with specified ID
+	doc, err := client.Get().
+		Index("ray").
+		Type("book").
+		Id(id).
+		Do(ctx)
+	if err != nil {
+		log.Println(err)
+	}
+	if doc.Found {
+		t := Book{}
+		source, _ := doc.Source.MarshalJSON()
+		err := json.Unmarshal(source, &t)
+		if err != nil {
+			log.Printf("failed to get document id: %s, error:%s", id, err)
+		}
+		fmt.Printf("%+v", t)
+		return t
+	}
+	return Book{}
+}

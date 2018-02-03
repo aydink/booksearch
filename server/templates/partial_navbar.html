@@ -3,18 +3,31 @@
 <nav class="navbar fixed-top navbar-light bg-light py-2">
     <a class="navbar-brand" href="/">Resmi yayınlar</a>
 
-    <div class="col-lg-9 py-0">
-        <form class="" method="GET" action="/search/">
-            <div class="input-group">
-                    <input type="text" class="form-control rounded-0 mr-sm-2" size="40" name="q" id="q" placeholder="" value="{{.q}}">
-
-                <button class="btn btn-outline-secondary rounded-0" type="submit"> Ara </button>
+    <div class="col-lg-7 py-0">
+        <form method="GET" action="/search/">
+        <div class="input-group">
+             <input type="hidden" name="w" id="w" value="content">
+            <input type="text" class="form-control" name="q" id="q" value="{{.q}}" aria-label="Aramak istediğiniz ifadeyi yazınız">
+        
+            <div class="btn-group">
+                <button type="button" class="btn" name="where" value="content"></button>
+                <button type="button" class="btn dropdown-toggle dropdown-toggle-split" data-toggle="dropdown">
+                  <span class="caret">Kitap içinde</span>
+                </button>
+                <div class="dropdown-menu">
+                  <a class="dropdown-item" href="#">Kitap içinde</a>
+                  <a class="dropdown-item" href="#">Kitap adında</a>
+                </div>
             </div>
-        </form>
-
+            &nbsp;
+            
+            <button class="btn" type="submit">&nbsp;&nbsp; Ara &nbsp;&nbsp;</button>
+        </div>
+    </form>
     </div>
 
     <a class="navbar-brand">Yardım</a>
 </nav>
 
 {{end}}
+

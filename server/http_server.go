@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"html/template"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -38,6 +39,7 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 	t := template.Must(template.New("").Funcs(funcMap).ParseGlob("templates/*.html"))
 
 	keywords := r.URL.Query().Get("q")
+	searchType := r.URL.Query().Get("w")
 	start := r.URL.Query().Get("start")
 	startInt, err := strconv.Atoi(start)
 	fmt.Println("start:", startInt)
@@ -47,14 +49,22 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 		startInt = 0
 	}
 
-	data := query(keywords, startInt, getFilters(r.URL.Path))
+	data := make(map[string]interface{})
+	templateName := "search"
+
+	if searchType == "title" {
+		data = titleQuery(keywords, startInt, getFilters(r.URL.Path))
+		templateName = "title"
+	} else {
+		data = query(keywords, startInt, getFilters(r.URL.Path))
+	}
 
 	// show dictionary definion on only first page
 	if startInt == 0 {
 		data["definition"], data["hasDefinition"] = queryDictionary(keywords)
 	}
 
-	err = t.ExecuteTemplate(w, "search", data)
+	err = t.ExecuteTemplate(w, templateName, data)
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -137,6 +147,25 @@ func createImage(query string) {
 	}
 }
 
+// PDF file handler
+// send pdf file and sets a proper title
+func downloadHandler(w http.ResponseWriter, r *http.Request) {
+	hash := r.URL.Query().Get("book")
+
+	file, err := os.Open("books/" + hash + ".pdf")
+	if err != nil {
+		log.Printf("failed to serve pdf file:%s", "books/"+hash+".pdf")
+	}
+
+	book := getBook(hash)
+	name := book.Serial + " " + book.Title
+	name = strings.TrimSpace(name)
+
+	w.Header().Set("Content-Disposition", "attachment; filename="+name+".pdf")
+	w.Header().Set("Content-Type", "application/pdf")
+	io.Copy(w, file)
+}
+
 func createImage_old(query string) {
 
 	parts := strings.Split(query, "-")
@@ -166,6 +195,7 @@ func main() {
 	http.HandleFunc("/filter/", filterHandler)
 	http.HandleFunc("/page", pageHandler)
 	http.HandleFunc("/image", imageHandler)
+	http.HandleFunc("/download/", downloadHandler)
 	http.HandleFunc("/api/addbook", ApiIndexFile)
 	http.HandleFunc("/api/payloads", payloadHandler)
 
