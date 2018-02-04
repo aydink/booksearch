@@ -142,8 +142,8 @@ func GetTokenPositions(page string, tokens []string) string {
 
 func SavePage(key, value []byte) {
 
-	fmt.Println("INSIDE SAVE PAGE:", string(key))
-	fmt.Println(DecodePayload(value))
+	//fmt.Println("INSIDE SAVE PAGE:", string(key))
+	//fmt.Println(DecodePayload(value))
 
 	err := db.Update(func(txn *badger.Txn) error {
 		err := txn.Set(key, value)
@@ -235,7 +235,7 @@ func ProcessPayloadFile(hash string) {
 
 			if t.Data == "page" {
 				pageNumber++
-				fmt.Println(pageNumber, "------------------------------")
+				//fmt.Println(pageNumber, "------------------------------")
 
 				tokens = make(map[string][][4]int)
 			}

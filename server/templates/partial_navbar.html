@@ -6,22 +6,12 @@
     <div class="col-lg-7 py-0">
         <form method="GET" action="/search/">
         <div class="input-group">
-             <input type="hidden" name="w" id="w" value="content">
             <input type="text" class="form-control" name="q" id="q" value="{{.q}}" aria-label="Aramak istediğiniz ifadeyi yazınız">
         
-            <div class="btn-group">
-                <button type="button" class="btn" name="where" value="content"></button>
-                <button type="button" class="btn dropdown-toggle dropdown-toggle-split" data-toggle="dropdown">
-                  <span class="caret">Kitap içinde</span>
-                </button>
-                <div class="dropdown-menu">
-                  <a class="dropdown-item" href="#">Kitap içinde</a>
-                  <a class="dropdown-item" href="#">Kitap adında</a>
-                </div>
-            </div>
             &nbsp;
             
-            <button class="btn" type="submit">&nbsp;&nbsp; Ara &nbsp;&nbsp;</button>
+            <button class="btn" type="submit" name="w" value="content">&nbsp;&nbsp; Ara &nbsp;&nbsp;</button>&nbsp;
+            <button class="btn" type="submit" name="w" value="title">Kitap adında ara</button>
         </div>
     </form>
     </div>

@@ -64,7 +64,7 @@
 
 <body style="padding-top:60px">
    
-    {{template "navbar_search"}}    
+    {{template "navbar_search" .}}    
 
     <div class="container">
         <div class="row">
@@ -130,8 +130,8 @@
         <script>
 
             var filters = [];
-            {{ range.filters }} filters.push({ "key": "{{index . 0}}", "value": "{{index . 2}}" });
-            {{ end }}
+            {{range.filters}} filters.push({ "key": "{{index . 0}}", "value": "{{index . 2}}" });
+            {{end}}
 
             function addFilter(filter) {
 
@@ -187,7 +187,7 @@
                 }
 
                 fullUrl = window.location.search;
-
+               
                 var queryString = fullUrl.substring(fullUrl.indexOf('?') + 1);
                 console.log(url + "?" + queryString);
 
@@ -205,24 +205,12 @@
                 $("#q").focus();
                 $("#q").val($("#q").val());
 
-                {{ range.filters }}
+                {{range.filters}}
                 $("#filter-{{index . 0}}").on('closed.bs.alert', function () {
                     removeFilter("{{index . 0}}");
                 });
-                {{ end }}
-
-
-                $(".dropdown-menu a").click(function(){
-                    var selText = $(this).text();
-                    if (selText == "Kitap adında") {
-                        $("#w").val("title")
-                    } else {
-                        $("#w").val("content")
-                    }
-                    $(this).parents('.btn-group').find('.dropdown-toggle').html(selText+' <span class="caret"></span>');
-                    });
-                });
-
+                {{end}}
+            });
         </script>
 </body>
 

@@ -165,7 +165,7 @@ func query(keywords string, start int, filters [][3]string) map[string]interface
 	// Deserialize aggregations
 	if agg, found := searchResult.Aggregations.Terms("Türü"); found {
 		for _, bucket := range agg.Buckets {
-			fmt.Println(bucket.Key, bucket.DocCount)
+			//fmt.Println(bucket.Key, bucket.DocCount)
 			genreFacet = append(genreFacet, Facet{bucket.Key.(string), bucket.DocCount})
 		}
 	}
@@ -173,7 +173,7 @@ func query(keywords string, start int, filters [][3]string) map[string]interface
 	// Deserialize aggregations
 	if agg, found := searchResult.Aggregations.Terms("Kuvveti"); found {
 		for _, bucket := range agg.Buckets {
-			fmt.Println(bucket.Key, bucket.DocCount)
+			//fmt.Println(bucket.Key, bucket.DocCount)
 			departmentFacet = append(departmentFacet, Facet{bucket.Key.(string), bucket.DocCount})
 		}
 	}
@@ -181,7 +181,7 @@ func query(keywords string, start int, filters [][3]string) map[string]interface
 	// Deserialize aggregations
 	if agg, found := searchResult.Aggregations.Terms("Kategori"); found {
 		for _, bucket := range agg.Buckets {
-			fmt.Println(bucket.Key, bucket.DocCount)
+			//fmt.Println(bucket.Key, bucket.DocCount)
 			categoryFacet = append(categoryFacet, Facet{bucket.Key.(string), bucket.DocCount})
 		}
 	}
@@ -189,7 +189,7 @@ func query(keywords string, start int, filters [][3]string) map[string]interface
 	// Deserialize aggregations
 	if agg, found := searchResult.Aggregations.Terms("Basım yılı"); found {
 		for _, bucket := range agg.Buckets {
-			fmt.Println(bucket.Key, bucket.DocCount)
+			//fmt.Println(bucket.Key, bucket.DocCount)
 			yearFacet = append(yearFacet, Facet{strconv.FormatFloat(bucket.Key.(float64), 'f', 0, 64), bucket.DocCount})
 		}
 	}
@@ -337,7 +337,7 @@ func getBook(id string) Book {
 		if err != nil {
 			log.Printf("failed to get document id: %s, error:%s", id, err)
 		}
-		fmt.Printf("%+v", t)
+		//fmt.Printf("%+v", t)
 		return t
 	}
 	return Book{}

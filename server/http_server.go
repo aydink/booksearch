@@ -151,17 +151,38 @@ func createImage(query string) {
 // send pdf file and sets a proper title
 func downloadHandler(w http.ResponseWriter, r *http.Request) {
 	hash := r.URL.Query().Get("book")
+	if len(hash) > 32 {
+		hash = hash[:32]
+	}
+
+	if len(hash) < 32 {
+		w.WriteHeader(http.StatusNotFound)
+		fmt.Fprint(w, "Geçersiz bir istekte bulundunuz.")
+		log.Printf("download pdf, invalid hash value:%s", hash)
+		return
+	}
+
+	// check if user wants to download file
+	force := r.URL.Query().Get("force")
 
 	file, err := os.Open("books/" + hash + ".pdf")
+	defer file.Close()
 	if err != nil {
 		log.Printf("failed to serve pdf file:%s", "books/"+hash+".pdf")
+		w.WriteHeader(http.StatusNotFound)
+		fmt.Fprint(w, "Geçersiz bir istekte bulundunuz.")
+		return
 	}
 
 	book := getBook(hash)
 	name := book.Serial + " " + book.Title
 	name = strings.TrimSpace(name)
 
-	w.Header().Set("Content-Disposition", "attachment; filename="+name+".pdf")
+	// if there is an explicit url prameter "force=true" then force browser to download not try to display the pdf file
+	if force == "true" {
+		w.Header().Set("Content-Disposition", "attachment; filename="+name+".pdf")
+	}
+
 	w.Header().Set("Content-Type", "application/pdf")
 	io.Copy(w, file)
 }

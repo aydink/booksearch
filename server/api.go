@@ -76,9 +76,13 @@ func ApiIndexFile(w http.ResponseWriter, r *http.Request) {
 		book.Category = category
 		book.Year = year
 
-		fmt.Printf("%+v", book)
-		fmt.Println("hatalar: ", len(formsErrors))
-		fmt.Println(formsErrors)
+		if len(formsErrors) > 0 {
+			log.Printf("API addbook errors:%s\n", formsErrors)
+			fmt.Printf("%+v", book)
+			w.WriteHeader(http.StatusBadRequest)
+			fmt.Fprintf(w, "form errors:%s", formsErrors)
+			return
+		}
 
 		file, handler, err := r.FormFile("file")
 		if err != nil {
@@ -87,7 +91,7 @@ func ApiIndexFile(w http.ResponseWriter, r *http.Request) {
 		}
 		defer file.Close()
 
-		fmt.Fprintf(w, "Headers --> %v", handler.Header["Content-Type"][0])
+		fmt.Fprintf(w, "Headers --> %v\n", handler.Header["Content-Type"][0])
 
 		if handler.Header["Content-Type"][0] == "application/pdf" {
 
@@ -141,7 +145,7 @@ func processPdfFile(book Book) error {
 	if len(matches) == 2 {
 		book.NumPages, err = strconv.Atoi(matches[1])
 		if err != nil {
-			fmt.Println(err)
+			log.Printf("Failed to find PDF file number of pages, file:%s.pdf, error:%s\n", err, book.Hash)
 			return err
 		}
 	}
@@ -150,7 +154,7 @@ func processPdfFile(book Book) error {
 		_, err = exec.Command("pdftotext", "-enc", "UTF-8", "books/"+book.Hash+".pdf", "books/"+book.Hash+".txt").Output()
 		if err != nil {
 			//log.Fatalln(err)
-			log.Println(err, book.Hash)
+			log.Printf("PDF text extraction failed, file:%s.pdf, error:%s\n", err, book.Hash)
 			return err
 		}
 	}
@@ -159,7 +163,7 @@ func processPdfFile(book Book) error {
 		_, err = exec.Command("pdftotext", "-enc", "UTF-8", "-bbox", "books/"+book.Hash+".pdf", "books/"+book.Hash+".bbox.txt").Output()
 		if err != nil {
 			//log.Fatalln(err)
-			log.Println(err, book.Hash)
+			log.Printf("PDF payload extraction failed, file:%s.pdf, error:%s\n", err, book.Hash)
 			return err
 		}
 	}

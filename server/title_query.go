@@ -191,7 +191,8 @@ func titleQuery(keywords string, start int, filters [][3]string) map[string]inte
 			data["suggest_text"] = searchResult.Suggest["phrase_suggestion"][0].Options[0].Text
 			data["suggest_hl"] = searchResult.Suggest["phrase_suggestion"][0].Options[0].Highlighted
 		}
-		data["pages"] = paginate(start, 10, int(searchResult.TotalHits()))
 	*/
+	data["pages"] = paginate(start, 10, int(searchResult.TotalHits()))
+
 	return data
 }

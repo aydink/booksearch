@@ -29,7 +29,7 @@ func indexBook(book Book) {
 	var buf bytes.Buffer
 	bookJson, err := json.Marshal(book)
 	if err != nil {
-		log.Fatalln(err)
+		log.Printf("Failed to marshal Book struct to JSON, file:%s.pdf, error:%s\n", err, book.Hash)
 		return
 	}
 
@@ -44,9 +44,8 @@ func indexBook(book Book) {
 	buf.Reset()
 
 	pages, err := parseTextFile(book.Hash)
-
 	if err != nil {
-		log.Fatalln(err)
+		log.Printf("Parsing pdf text file failed, file:%s.pdf, error:%s\n", err, book.Hash)
 		return
 	}
 
@@ -69,13 +68,12 @@ func indexBook(book Book) {
 			log.Fatalln(err)
 			return
 		}
-		fmt.Println(string(b))
+		//fmt.Println(string(b))
 
 		buf.WriteString("{ \"index\" : { \"_index\" : \"book\", \"_type\" : \"novel\", \"_id\": \"" + book.Hash + "-" + strconv.Itoa(doc.Page) + "\" } }")
 		buf.WriteString("\n")
 		buf.WriteString(string(b))
 		buf.WriteString("\n")
-		//fmt.Printf("%v", doc)
 	}
 
 	//fmt.Print(buf.String())
@@ -97,8 +95,10 @@ func postToElasticsearch(buffer []byte) {
 	}
 	defer resp.Body.Close()
 
-	fmt.Println("response Status:", resp.Status)
-	fmt.Println("response Headers:", resp.Header)
-	//body, _ := ioutil.ReadAll(resp.Body)
-	//fmt.Println("response Body:", string(body))
+	if resp.StatusCode != 200 {
+		fmt.Println("response Status:", resp.Status)
+		fmt.Println("response Headers:", resp.Header)
+		body, _ := ioutil.ReadAll(resp.Body)
+		fmt.Println("response Body:", string(body))
+	}
 }
