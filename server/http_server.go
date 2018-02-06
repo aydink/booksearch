@@ -140,7 +140,7 @@ func createImage(query string) {
 			log.Println(err, fileMap[hash])
 		}
 	} else {
-		fmt.Println("-----------------------", "using cashed image")
+		//fmt.Println("-----------------------", "using cashed image")
 	}
 }
 

@@ -127,9 +127,9 @@ func query(keywords string, start int, filters [][3]string) map[string]interface
 
 	// searchResult is of type SearchResult and returns hits, suggestions,
 	// and all kinds of other information from Elasticsearch.
-	fmt.Printf("Query took %d milliseconds\n", searchResult.TookInMillis)
 
-	fmt.Println(searchResult.TotalHits())
+	//fmt.Printf("Query took %d milliseconds\n", searchResult.TookInMillis)
+	//fmt.Println(searchResult.TotalHits())
 
 	data := make(map[string]interface{}, 0)
 	data["TotalHits"] = searchResult.TotalHits()
@@ -250,16 +250,16 @@ func queryDictionary(keywords string) (DictionaryEntry, bool) {
 
 	// searchResult is of type SearchResult and returns hits, suggestions,
 	// and all kinds of other information from Elasticsearch.
-	fmt.Printf("Query took %d milliseconds\n", searchResult.TookInMillis)
 
-	fmt.Println("TotalHits:", searchResult.TotalHits())
+	//fmt.Printf("Query took %d milliseconds\n", searchResult.TookInMillis)
+	//fmt.Println("TotalHits:", searchResult.TotalHits())
 
 	hasResult := false
 
 	if searchResult.TotalHits() >= 1 {
-		fmt.Println("evet buldum")
+		//fmt.Println("evet buldum")
 		err := json.Unmarshal(*searchResult.Hits.Hits[0].Source, &entry)
-		fmt.Println(entry)
+		//fmt.Println(entry)
 
 		if err != nil {
 			// Deserialization failed
@@ -303,7 +303,7 @@ func getDocument(id string) Document {
 		if err != nil {
 			log.Printf("failed to get document id: %s, error:%s", id, err)
 		}
-		fmt.Printf("%+v", t)
+		//fmt.Printf("%+v", t)
 		return t
 	}
 	return Document{}

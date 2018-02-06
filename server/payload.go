@@ -116,7 +116,7 @@ func DecodePayload(data []byte) map[string][]BBox {
 }
 
 func GetTokenPositions(page string, tokens []string) string {
-	fmt.Println("page::::::::::", page, tokens)
+	//fmt.Println("page::::::::::", page, tokens)
 
 	jsonStr := GetPage(page)
 
@@ -168,7 +168,7 @@ func GetPage(key string) []byte {
 		}
 
 		val, err := item.Value()
-		fmt.Println("length of slice:", len(val))
+		//fmt.Println("length of slice:", len(val))
 		s = val
 		if err != nil {
 			return err
@@ -177,10 +177,9 @@ func GetPage(key string) []byte {
 	})
 
 	if err != nil {
-		log.Println(err)
-		log.Println("key:", key)
+		log.Printf("loagind payloads for page:%s failed, error:%s\n", key, err)
 	}
-	fmt.Println("length of slice:", len(s))
+	//fmt.Println("length of slice:", len(s))
 	//fmt.Println(string(v))
 	return s
 }
@@ -190,20 +189,19 @@ func QueryStringTokens(page string, q string) string {
 	s := strings.ToLowerSpecial(unicode.TurkishCase, q)
 	s = replacer.Replace(s)
 
-	fmt.Println(q)
+	//fmt.Println(q)
 
 	tokens := strings.FieldsFunc(s, f)
 
-	fmt.Println("num tokens:", len(tokens))
-
-	fmt.Println("***********")
+	//fmt.Println("num tokens:", len(tokens))
+	//fmt.Println("***********")
 
 	for key, val := range tokens {
-		fmt.Println("key:", key, "val:", val)
+		//fmt.Println("key:", key, "val:", val)
 		tokens[key] = Stem(val)
 	}
 
-	fmt.Println("***********")
+	//fmt.Println("***********")
 
 	return GetTokenPositions(page, tokens)
 }
