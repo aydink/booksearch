@@ -191,7 +191,7 @@ func processPdfFile(book Book) error {
 	// send book to elasticsearh
 	indexBook(book)
 
-	fmt.Printf("%+v\n", book)
+	//fmt.Printf("%+v\n", book)
 	return nil
 
 }
