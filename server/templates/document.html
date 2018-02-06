@@ -1,3 +1,4 @@
+{{define "document"}}
 <!doctype html>
 <html lang="en">
 
@@ -134,23 +135,8 @@
 </head>
 
 <body style="padding-top:60px">
-    <nav class="navbar fixed-top navbar-light bg-light py-2">
-
-        <a class="navbar-brand" href="/">Resmi yayınlar</a>
-
-
-        <div class="col-lg-9 py-0">
-            <form class="form-inline" method="GET" action="/search/">
-                <div class="input-group">
-                    <input type="text" class="form-control rounded-0 mr-sm-2" size="60" name="q" placeholder="" value="{{.q}}">
-
-                    <button class="btn btn-outline-secondary rounded-0" type="submit">Search</button>
-                </div>
-            </form>
-        </div>
-
-        <a class="navbar-brand">Yardım</a>
-    </nav>
+    
+    {{template "navbar_search" .}}
 
     <div class="container">
     
@@ -263,3 +249,4 @@
 </body>
 
 </html>
+{{end}}

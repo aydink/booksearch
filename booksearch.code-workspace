@@ -8,6 +8,9 @@
 		},
 		{
 			"path": "setup"
+		},
+		{
+			"path": "client"
 		}
 	]
 }

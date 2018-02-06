@@ -86,10 +86,7 @@ func filterHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func pageHandler(w http.ResponseWriter, r *http.Request) {
-	t, err := template.ParseFiles("templates/document.html")
-	if err != nil {
-		fmt.Fprintf(w, "Hata: %s!", err)
-	}
+	t := template.Must(template.New("").Funcs(funcMap).ParseGlob("templates/*.html"))
 
 	query := r.URL.Query().Get("page")
 	q := r.URL.Query().Get("q")
@@ -106,7 +103,7 @@ func pageHandler(w http.ResponseWriter, r *http.Request) {
 	data["page"] = page
 	data["doc"] = getDocument(query)
 
-	t.Execute(w, data)
+	t.ExecuteTemplate(w, "document", data)
 }
 
 func payloadHandler(w http.ResponseWriter, r *http.Request) {

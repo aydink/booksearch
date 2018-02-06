@@ -91,9 +91,26 @@ func ApiIndexFile(w http.ResponseWriter, r *http.Request) {
 		}
 		defer file.Close()
 
-		fmt.Fprintf(w, "Headers --> %v\n", handler.Header["Content-Type"][0])
+		// Create a buffer to store the header of the file in
+		fileHeader := make([]byte, 512)
 
-		if handler.Header["Content-Type"][0] == "application/pdf" {
+		// Copy the headers into the FileHeader buffer
+		if _, err := file.Read(fileHeader); err != nil {
+			return
+		}
+
+		// set position back to start.
+		if _, err := file.Seek(0, 0); err != nil {
+			return
+		}
+
+		contentType := http.DetectContentType(fileHeader)
+
+		//fmt.Fprintf(w, "Headers --> %v\n", handler.Header["Content-Type"][0])
+		fmt.Fprintf(w, "Headers --> %v\n", contentType)
+
+		//if handler.Header["Content-Type"][0] == "application/pdf" {
+		if contentType == "application/pdf" {
 
 			tempFileName := pseudo_uuid()
 
