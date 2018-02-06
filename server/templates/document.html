@@ -142,7 +142,7 @@
     
         <div class="row">
             <div class="col-lg-12 card rounded-0">
-                <h3 style="margin: auto;">{{.doc.Serial}} {{.doc.Title}}</h3>
+                <a style="margin: auto; font-size:larger" id="pdflink" href="#" onclick="openPdf()">{{.doc.Serial}} {{.doc.Title}}</a>
             </div>
             <div class="col-lg-12 card rounded-0">
                 <div class="image-container" id="image_container">
@@ -243,6 +243,26 @@
                 });
             });
     }
+
+    function openPdf() {
+        window.location.href = "/download/?book="+hash+"#page="+currentPage;
+    }
+
+    function gotoPage(start) {
+        var url = location.protocol + '//' + location.host + "/page?" + hash + "-";
+        
+        fullUrl = window.location.search;
+
+        
+        if (queryString.search(/&start=[0-9]+/i) > -1) {
+            queryString = queryString.replace(/&start=[0-9]+/i, "&start=" + start)
+        } else {
+            queryString = queryString + "&start=" + start;
+        }
+
+        window.location = url + "?" + queryString
+    }
+
 
 
 </script>

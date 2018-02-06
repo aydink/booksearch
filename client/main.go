@@ -75,7 +75,7 @@ func Upload(url, file string, book Book) (err error) {
 	if fw, err = w.CreateFormField("year"); err != nil {
 		return
 	}
-	if _, err = fw.Write([]byte("1982")); err != nil {
+	if _, err = fw.Write([]byte(book.Year)); err != nil {
 		return
 	}
 
@@ -141,15 +141,15 @@ func uploadBooks(csvFile string) {
 		book.Year = record[3]
 		book.Genre = record[4]
 
-		fmt.Println(record[1])
+		fmt.Println(record[2])
 
 		Upload("http://localhost:8080/api/addbook", "/Users/aydink/Downloads/kanunlar/"+record[0], book)
 	}
 }
 
 func main() {
-
-	uploadBooks("/Users/aydink/Downloads/kanunlar/kanun listesi.csv")
+	csvFilename := os.Args[1]
+	uploadBooks(csvFilename)
 	//Upload("http://localhost:8080/api/addbook", "/Users/aydink/Desktop/anayasa_2011.pdf")
 	//Upload("http://localhost:8080/api/addbook", "/Users/aydink/Desktop/PostGIS in Action.pdf")
 }
