@@ -4,3 +4,6 @@ server/books/
 server/static/images/*.*
 server/data/badger/*.*
 .server
+.server.exe
+client/client
+client/client.exe
