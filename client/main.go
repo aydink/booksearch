@@ -143,11 +143,21 @@ func uploadBooks(csvFile string) {
 
 		fmt.Println(record[2])
 
-		Upload("http://localhost:8080/api/addbook", "/Users/aydink/Downloads/kanunlar/"+record[0], book)
+		err = Upload("http://localhost:8080/api/addbook", "/Users/aydink/Downloads/kanunlar/"+record[0], book)
+		if err != nil {
+			fmt.Println(err)
+		}
 	}
 }
 
 func main() {
+	if len(os.Args) != 2 {
+		fmt.Println("Bu uygulama parametre olarak csv dosyasının yolunu alır")
+		fmt.Println("CSV dosyada sırasıyla dosyaadi;kitap_seri_numarası;kitap_adı;basım_yılı;kitap_türü alanları bulunmalıdır.")
+		fmt.Println("Örnek kullanım: client test.csv")
+		return
+	}
+
 	csvFilename := os.Args[1]
 	uploadBooks(csvFilename)
 	//Upload("http://localhost:8080/api/addbook", "/Users/aydink/Desktop/anayasa_2011.pdf")
