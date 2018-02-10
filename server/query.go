@@ -58,10 +58,10 @@ func query(keywords string, start int, filters [][3]string) map[string]interface
 
 	for i := 0; i < len(filters); i++ {
 		boolQuery = boolQuery.Filter(elastic.NewTermQuery(filters[i][0], filters[i][2]))
-		fmt.Println("filtre eklendi")
+		//fmt.Println("filtre eklendi")
 	}
 
-	printQuery(boolQuery)
+	//printQuery(boolQuery)
 
 	higlight := elastic.NewHighlight()
 	higlight = higlight.Field("content")
@@ -235,7 +235,7 @@ func queryDictionary(keywords string) (DictionaryEntry, bool) {
 
 	termQuery := elastic.NewTermQuery("eng", keywords)
 
-	printQuery(termQuery)
+	//printQuery(termQuery)
 
 	search := client.Search().
 		Index("dictionary"). // search in index "twitter"
@@ -270,7 +270,7 @@ func queryDictionary(keywords string) (DictionaryEntry, bool) {
 		hasResult = true
 	}
 
-	fmt.Println(entry)
+	//fmt.Println(entry)
 
 	return entry, hasResult
 }

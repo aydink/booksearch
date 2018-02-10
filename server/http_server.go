@@ -42,10 +42,10 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 	searchType := r.URL.Query().Get("w")
 	start := r.URL.Query().Get("start")
 	startInt, err := strconv.Atoi(start)
-	fmt.Println("start:", startInt)
+	//fmt.Println("start:", startInt)
 
 	if err != nil {
-		fmt.Println("error parsing 'start' parameter")
+		//fmt.Println("error parsing 'start' parameter")
 		startInt = 0
 	}
 
@@ -125,19 +125,24 @@ func imageHandler(w http.ResponseWriter, r *http.Request) {
 	http.ServeFile(w, r, "static/images/"+hash+"-"+page+".png")
 }
 
+func reindexHandler(w http.ResponseWriter, r *http.Request) {
+	go reindexAllFiles()
+	fmt.Fprint(w, "Reindeing all pdf files")
+}
+
 func createImage(query string) {
 
 	parts := strings.Split(query, "-")
 	hash := parts[0]
 	page := parts[1]
 
-	fmt.Println("hash:", hash, "page:", page, "file:", fileMap[hash])
+	//fmt.Println("hash:", hash, "page:", page, "file:", fileMap[hash])
 
 	if _, err := os.Stat("static/images/" + hash + "-" + page + ".png"); os.IsNotExist(err) {
 		_, err := exec.Command("pdftocairo", "-png", "-singlefile", "-f", page, "-l", page, "books/"+hash+".pdf", "static/images/"+hash+"-"+page).Output()
 		if err != nil {
 			//log.Fatalln(err)
-			log.Println(err, fileMap[hash])
+			log.Println(err)
 		}
 	} else {
 		//fmt.Println("-----------------------", "using cashed image")
@@ -184,31 +189,14 @@ func downloadHandler(w http.ResponseWriter, r *http.Request) {
 	io.Copy(w, file)
 }
 
-func createImage_old(query string) {
-
-	parts := strings.Split(query, "-")
-	hash := parts[0]
-	page := parts[1]
-
-	fmt.Println("hash:", hash, "page:", page, "file:", fileMap[hash])
-
-	if _, err := os.Stat("static/images/" + hash + "-" + page + ".png"); os.IsNotExist(err) {
-		_, err := exec.Command("pdftocairo", "-png", "-singlefile", "-f", page, "-l", page, fileMap[hash], "static/images/"+hash+"-"+page).Output()
-		if err != nil {
-			//log.Fatalln(err)
-			log.Println(err, fileMap[hash])
-		}
-	} else {
-		fmt.Println("-----------------------", "using cashed image")
-	}
-}
-
 func main() {
 
 	log.SetFlags(log.Llongfile)
 
 	http.HandleFunc("/", homeHandler)
 	http.HandleFunc("/test", requireAuthMiddleware(testHandler))
+	http.HandleFunc("/api/reindex", reindexHandler)
+
 	http.HandleFunc("/search/", searchHandler)
 	http.HandleFunc("/filter/", filterHandler)
 	http.HandleFunc("/page", pageHandler)

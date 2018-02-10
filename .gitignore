@@ -7,3 +7,4 @@ server/data/badger/*.*
 .server.exe
 client/client
 client/client.exe
+vendor/

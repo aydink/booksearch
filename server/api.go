@@ -4,17 +4,19 @@ import (
 	"crypto/md5"
 	"crypto/rand"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"io"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"regexp"
 	"strconv"
 	"strings"
-	"time"
 )
 
 func pseudo_uuid() (uuid string) {
@@ -33,39 +35,38 @@ func pseudo_uuid() (uuid string) {
 }
 
 func ApiIndexFile(w http.ResponseWriter, r *http.Request) {
-	if r.Method == "GET" {
-		crutime := time.Now().Unix()
-		h := md5.New()
-		io.WriteString(h, strconv.FormatInt(crutime, 10))
-		token := fmt.Sprintf("%x", h.Sum(nil))
+	t := template.Must(template.New("").Funcs(funcMap).ParseGlob("templates/*.html"))
 
-		t, _ := template.ParseFiles("templates/upload.html")
-		t.Execute(w, token)
+	if r.Method == "GET" {
+
+		data := make(map[string]interface{})
+
+		t.ExecuteTemplate(w, "upload", data)
 	} else {
 		// max file size is 200 mb --> 209715200 bytes
 		r.ParseMultipartForm(209715200)
 
-		formsErrors := make(map[string]string)
+		formErrors := make(map[string]string)
 
 		serial := strings.TrimSpace(r.PostFormValue("serial"))
 		title := strings.TrimSpace(r.PostFormValue("title"))
 		if len(title) < 2 {
-			formsErrors["title"] = "Kitap adı 2 karakterden kısa olamaz!"
+			formErrors["title"] = "Kitap adı 2 karakterden kısa olamaz!"
 		}
 		department := strings.TrimSpace(r.PostFormValue("department"))
 		if len(department) < 1 {
-			formsErrors["department"] = "Yönergenin sahibi komutanlık seçmelisiniz!"
+			formErrors["department"] = "Yönergenin sahibi komutanlık seçmelisiniz!"
 		}
 		genre := strings.TrimSpace(r.PostFormValue("genre"))
 		if len(genre) < 1 {
-			formsErrors["genre"] = "Yayın türünü seçmelisiniz!"
+			formErrors["genre"] = "Yayın türünü seçmelisiniz!"
 		}
 		category := r.PostForm["category"]
 		yearString := strings.TrimSpace(r.PostFormValue("year"))
 
 		year, err := strconv.Atoi(yearString)
 		if err != nil {
-			formsErrors["year"] = "Basım yılı geçerli değil!"
+			formErrors["year"] = "Basım yılı geçerli değil!"
 		}
 
 		book := Book{}
@@ -76,11 +77,14 @@ func ApiIndexFile(w http.ResponseWriter, r *http.Request) {
 		book.Category = category
 		book.Year = year
 
-		if len(formsErrors) > 0 {
-			log.Printf("API addbook errors:%s\n", formsErrors)
+		if len(formErrors) > 0 {
+			log.Printf("API addbook errors:%s\n", formErrors)
 			fmt.Printf("%+v", book)
 			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprintf(w, "form errors:%s", formsErrors)
+
+			for _, e := range formErrors {
+				fmt.Fprintln(w, e)
+			}
 			return
 		}
 
@@ -191,7 +195,77 @@ func processPdfFile(book Book) error {
 	// send book to elasticsearh
 	indexBook(book)
 
+	// create filehash.json file for pdf file
+	err = saveBookMeta(book)
+	if err != nil {
+		return err
+	}
+
 	//fmt.Printf("%+v\n", book)
 	return nil
 
+}
+
+func saveBookMeta(book Book) error {
+
+	bookJson, err := json.Marshal(book)
+	if err != nil {
+		return err
+	}
+
+	file, err := os.Create("books/" + book.Hash + ".json")
+	defer file.Close()
+	if err != nil {
+		return err
+	}
+
+	_, err = file.Write(bookJson)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func loadBookMeta(filename string) (Book, error) {
+
+	book := Book{}
+
+	file, err := os.Open("books/" + filename)
+	defer file.Close()
+	if err != nil {
+		return book, err
+	}
+
+	bookJson, err := ioutil.ReadAll(file)
+	if err != nil {
+		return book, err
+	}
+
+	err = json.Unmarshal(bookJson, &book)
+	if err != nil {
+		return book, err
+	}
+
+	return book, err
+}
+
+func reindexAllFiles() {
+	fileInfos, err := ioutil.ReadDir("books")
+	if err != nil {
+		log.Printf("opening books directory failed.")
+		return
+	}
+
+	for _, file := range fileInfos {
+		if filepath.Ext(file.Name()) == ".json" {
+			book, err := loadBookMeta(file.Name())
+			if err != nil {
+				log.Printf("loading file meta from json file:%s faied\n", err)
+				continue
+			}
+			fmt.Println(book)
+			indexBook(book)
+		}
+	}
 }

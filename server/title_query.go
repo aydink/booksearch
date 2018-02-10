@@ -35,14 +35,14 @@ func titleQuery(keywords string, start int, filters [][3]string) map[string]inte
 		//fmt.Println("filtre eklendi")
 	}
 
-	printQuery(boolQuery)
+	//printQuery(boolQuery)
 
 	higlight := elastic.NewHighlight()
 	higlight = higlight.Field("title")
 	higlight = higlight.FragmentSize(200)
 	higlight = higlight.NumOfFragments(1)
 
-	printQuery(higlight)
+	//printQuery(higlight)
 
 	aggsYear := elastic.NewTermsAggregation()
 	aggsYear = aggsYear.Field("year")
@@ -141,7 +141,7 @@ func titleQuery(keywords string, start int, filters [][3]string) map[string]inte
 	// Deserialize aggregations
 	if agg, found := searchResult.Aggregations.Terms("Türü"); found {
 		for _, bucket := range agg.Buckets {
-			fmt.Println(bucket.Key, bucket.DocCount)
+			//fmt.Println(bucket.Key, bucket.DocCount)
 			genreFacet = append(genreFacet, Facet{bucket.Key.(string), bucket.DocCount})
 		}
 	}
@@ -149,7 +149,7 @@ func titleQuery(keywords string, start int, filters [][3]string) map[string]inte
 	// Deserialize aggregations
 	if agg, found := searchResult.Aggregations.Terms("Kuvveti"); found {
 		for _, bucket := range agg.Buckets {
-			fmt.Println(bucket.Key, bucket.DocCount)
+			//fmt.Println(bucket.Key, bucket.DocCount)
 			departmentFacet = append(departmentFacet, Facet{bucket.Key.(string), bucket.DocCount})
 		}
 	}
@@ -157,7 +157,7 @@ func titleQuery(keywords string, start int, filters [][3]string) map[string]inte
 	// Deserialize aggregations
 	if agg, found := searchResult.Aggregations.Terms("Kategori"); found {
 		for _, bucket := range agg.Buckets {
-			fmt.Println(bucket.Key, bucket.DocCount)
+			//fmt.Println(bucket.Key, bucket.DocCount)
 			categoryFacet = append(categoryFacet, Facet{bucket.Key.(string), bucket.DocCount})
 		}
 	}
@@ -165,7 +165,7 @@ func titleQuery(keywords string, start int, filters [][3]string) map[string]inte
 	// Deserialize aggregations
 	if agg, found := searchResult.Aggregations.Terms("Basım yılı"); found {
 		for _, bucket := range agg.Buckets {
-			fmt.Println(bucket.Key, bucket.DocCount)
+			//fmt.Println(bucket.Key, bucket.DocCount)
 			yearFacet = append(yearFacet, Facet{strconv.FormatFloat(bucket.Key.(float64), 'f', 0, 64), bucket.DocCount})
 		}
 	}

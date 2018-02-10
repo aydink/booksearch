@@ -110,7 +110,7 @@ func DecodePayload(data []byte) map[string][]BBox {
 		fmt.Println(err)
 	}
 
-	fmt.Println(payload)
+	//fmt.Println(payload)
 
 	return payload
 }
@@ -253,16 +253,12 @@ func ProcessPayloadFile(hash string) {
 
 					switch w.Key {
 					case "xmin":
-						//bbox.XMin = coor
 						bbox[0] = coor
 					case "ymin":
-						//bbox.YMin = coor
 						bbox[1] = coor
 					case "xmax":
-						//bbox.XMax = coor
 						bbox[2] = coor
 					case "ymax":
-						//bbox.YMax = coor
 						bbox[3] = coor
 					}
 				}
