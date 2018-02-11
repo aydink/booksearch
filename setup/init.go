@@ -19,6 +19,16 @@ func main() {
 	if err != nil {
 		fmt.Println(err)
 	}
+
+	err = createIndex("book", "schema_dictionary.json")
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	err = createIndex("book", "schema_titles.json")
+	if err != nil {
+		fmt.Println(err)
+	}
 }
 
 var client *elastic.Client
