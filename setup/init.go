@@ -26,7 +26,7 @@ func main() {
 		fmt.Println(err)
 	}
 	
-	err = deleteIndex("titles")
+	err = deleteIndex("ray")
 	if err != nil {
 		fmt.Println(err)
 	}
@@ -43,7 +43,7 @@ func main() {
 		fmt.Println(err)
 	}
 
-	err = createIndex("titles", "schema_titles.json")
+	err = createIndex("ray", "schema_titles.json")
 	if err != nil {
 		fmt.Println(err)
 	}
