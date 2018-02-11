@@ -15,17 +15,35 @@ func main() {
 		return
 	}
 
+	//delete indexes
+	err := deleteIndex("book")
+	if err != nil {
+		fmt.Println(err)
+	}
+	
+	err = deleteIndex("dictionary")
+	if err != nil {
+		fmt.Println(err)
+	}
+	
+	err = deleteIndex("titles")
+	if err != nil {
+		fmt.Println(err)
+	}
+
+
+	// create indexes
 	err = createIndex("book", "schema_book.json")
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	err = createIndex("book", "schema_dictionary.json")
+	err = createIndex("dictionary", "schema_dictionary.json")
 	if err != nil {
 		fmt.Println(err)
 	}
 
-	err = createIndex("book", "schema_titles.json")
+	err = createIndex("titles", "schema_titles.json")
 	if err != nil {
 		fmt.Println(err)
 	}
