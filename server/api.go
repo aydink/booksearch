@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"html/template"
 	"io"
@@ -40,116 +41,124 @@ func ApiIndexFile(w http.ResponseWriter, r *http.Request) {
 	if r.Method == "GET" {
 
 		data := make(map[string]interface{})
-
 		t.ExecuteTemplate(w, "upload", data)
+
 	} else {
-		// max file size is 200 mb --> 209715200 bytes
-		r.ParseMultipartForm(209715200)
 
-		formErrors := make(map[string]string)
-
-		serial := strings.TrimSpace(r.PostFormValue("serial"))
-		title := strings.TrimSpace(r.PostFormValue("title"))
-		if len(title) < 2 {
-			formErrors["title"] = "Kitap adı 2 karakterden kısa olamaz!"
-		}
-		department := strings.TrimSpace(r.PostFormValue("department"))
-		if len(department) < 1 {
-			formErrors["department"] = "Yönergenin sahibi komutanlık seçmelisiniz!"
-		}
-		genre := strings.TrimSpace(r.PostFormValue("genre"))
-		if len(genre) < 1 {
-			formErrors["genre"] = "Yayın türünü seçmelisiniz!"
-		}
-		category := r.PostForm["category"]
-		yearString := strings.TrimSpace(r.PostFormValue("year"))
-
-		year, err := strconv.Atoi(yearString)
+		errorMap, err := processUploadedPdf(r)
 		if err != nil {
-			formErrors["year"] = "Basım yılı geçerli değil!"
-		}
-
-		book := Book{}
-		book.Serial = serial
-		book.Title = title
-		book.Department = department
-		book.Genre = genre
-		book.Category = category
-		book.Year = year
-
-		if len(formErrors) > 0 {
-			log.Printf("API addbook errors:%s\n", formErrors)
-			fmt.Printf("%+v", book)
 			w.WriteHeader(http.StatusBadRequest)
-
-			for _, e := range formErrors {
-				fmt.Fprintln(w, e)
+			for key, val := range errorMap {
+				fmt.Fprintf(w, "%s: %s\n", key, val)
 			}
 			return
 		}
-
-		file, handler, err := r.FormFile("file")
-		if err != nil {
-			fmt.Println("FormFile:", err)
-			return
-		}
-		defer file.Close()
-
-		// Create a buffer to store the header of the file in
-		fileHeader := make([]byte, 512)
-
-		// Copy the headers into the FileHeader buffer
-		if _, err := file.Read(fileHeader); err != nil {
-			return
-		}
-
-		// set position back to start.
-		if _, err := file.Seek(0, 0); err != nil {
-			return
-		}
-
-		contentType := http.DetectContentType(fileHeader)
-
-		//fmt.Fprintf(w, "Headers --> %v\n", handler.Header["Content-Type"][0])
-		fmt.Fprintf(w, "Headers --> %v\n", contentType)
-
-		//if handler.Header["Content-Type"][0] == "application/pdf" {
-		if contentType == "application/pdf" {
-
-			tempFileName := pseudo_uuid()
-
-			f, err := os.OpenFile("books/"+tempFileName, os.O_WRONLY|os.O_CREATE, 0666)
-			if err != nil {
-				fmt.Println("OpenFile:", err)
-				return
-			}
-
-			h := md5.New()
-			multiWriter := io.MultiWriter(f, h)
-
-			io.Copy(multiWriter, file)
-
-			hashInBytes := h.Sum(nil)
-			//Convert the bytes to a string
-			md5string := hex.EncodeToString(hashInBytes)
-
-			// close the temp file and rename it using md5 hash of the file
-			f.Close()
-			err = os.Rename("books/"+tempFileName, "books/"+md5string+".pdf")
-			if err != nil {
-				fmt.Println("File rename failed:", err)
-			}
-
-			book.Hash = md5string
-			fmt.Printf("%+v\n", book)
-			processPdfFile(book)
-
-		} else {
-			fmt.Println("Content-Type not supported. Expecting application/pdf but found", handler.Header["Content-Type"][0])
-			w.WriteHeader(http.StatusBadRequest)
-			fmt.Fprintln(w, "Content-Type not supported. Expecting application/pdf but found", handler.Header["Content-Type"][0])
-		}
+		data := make(map[string]interface{})
+		data["message"] = "Dosya başarıyla yüklendi."
+		t.ExecuteTemplate(w, "upload", data)
 	}
+}
+
+func processUploadedPdf(r *http.Request) (map[string]string, error) {
+
+	// max file size is 200 mb --> 209715200 bytes
+	r.ParseMultipartForm(209715200)
+
+	formErrors := make(map[string]string)
+
+	serial := strings.TrimSpace(r.PostFormValue("serial"))
+	title := strings.TrimSpace(r.PostFormValue("title"))
+	if len(title) < 2 {
+		formErrors["title"] = "Kitap adı 2 karakterden kısa olamaz!"
+	}
+	department := strings.TrimSpace(r.PostFormValue("department"))
+	if len(department) < 1 {
+		formErrors["department"] = "Yönergenin sahibi komutanlık seçmelisiniz!"
+	}
+	genre := strings.TrimSpace(r.PostFormValue("genre"))
+	if len(genre) < 1 {
+		formErrors["genre"] = "Yayın türünü seçmelisiniz!"
+	}
+	category := r.PostForm["category"]
+	yearString := strings.TrimSpace(r.PostFormValue("year"))
+
+	year, err := strconv.Atoi(yearString)
+	if err != nil {
+		formErrors["year"] = "Basım yılı geçerli değil!"
+	}
+
+	book := Book{}
+	book.Serial = serial
+	book.Title = title
+	book.Department = department
+	book.Genre = genre
+	book.Category = category
+	book.Year = year
+
+	if len(formErrors) > 0 {
+		log.Printf("/api/addbook errors:%s\n", formErrors)
+		return formErrors, errors.New("uploaded form has errors")
+		//fmt.Printf("%+v", book)
+	}
+
+	file, _, err := r.FormFile("file")
+	defer file.Close()
+	if err != nil {
+		fmt.Println("FormFile:", err)
+		return formErrors, err
+	}
+
+	// Create a buffer to store the header of the file in
+	fileHeader := make([]byte, 512)
+
+	// Copy the headers into the FileHeader buffer
+	if _, err := file.Read(fileHeader); err != nil {
+		return formErrors, err
+	}
+
+	// set position back to start.
+	if _, err := file.Seek(0, 0); err != nil {
+		return formErrors, err
+	}
+
+	contentType := http.DetectContentType(fileHeader)
+
+	if contentType == "application/pdf" {
+
+		tempFileName := pseudo_uuid()
+
+		f, err := os.Create("books/" + tempFileName)
+		if err != nil {
+			fmt.Println("OpenFile:", err)
+			return formErrors, err
+		}
+
+		h := md5.New()
+		multiWriter := io.MultiWriter(f, h)
+
+		io.Copy(multiWriter, file)
+
+		hashInBytes := h.Sum(nil)
+		//Convert the bytes to a string
+		md5string := hex.EncodeToString(hashInBytes)
+
+		// close the temp file and rename it using md5 hash of the file
+		f.Close()
+		err = os.Rename("books/"+tempFileName, "books/"+md5string+".pdf")
+		if err != nil {
+			fmt.Println("File rename failed:", err)
+			return formErrors, err
+		}
+
+		book.Hash = md5string
+		//fmt.Printf("%+v\n", book)
+		processPdfFile(book)
+	} else {
+		log.Printf("Content-Type not supported, expecting application/pdf found %s\n", contentType)
+		return formErrors, fmt.Errorf("Content-Type not supported, expecting application/pdf found %s\n", contentType)
+	}
+
+	return formErrors, nil
 }
 
 func processPdfFile(book Book) error {

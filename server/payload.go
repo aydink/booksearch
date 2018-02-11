@@ -142,9 +142,6 @@ func GetTokenPositions(page string, tokens []string) string {
 
 func SavePage(key, value []byte) {
 
-	//fmt.Println("INSIDE SAVE PAGE:", string(key))
-	//fmt.Println(DecodePayload(value))
-
 	err := db.Update(func(txn *badger.Txn) error {
 		err := txn.Set(key, value)
 		return err
@@ -157,8 +154,7 @@ func SavePage(key, value []byte) {
 }
 
 func GetPage(key string) []byte {
-	fmt.Println("Load page:", key)
-
+	//fmt.Println("Load page:", key)
 	var s []byte
 
 	err := db.View(func(txn *badger.Txn) error {
@@ -202,7 +198,6 @@ func QueryStringTokens(page string, q string) string {
 	}
 
 	//fmt.Println("***********")
-
 	return GetTokenPositions(page, tokens)
 }
 

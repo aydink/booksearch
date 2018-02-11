@@ -23,11 +23,16 @@
 
     <div class="container">
         <div class="row">
+            {{if .message}}
+            <div class="col-sm-12 alert alert-success">
+                <strong>Başarılı!</strong> Dosya yüklendi.
+            </div>
+            {{end}}
             <div class="col-sm-12">
                 <h3 class="text-center">Yeni yayın ekleme sayfası</h3>
             </div>
         </div>
-        <form class="form-horizontal" onsubmit="event.preventDefault(); validateForm();" method="POST" enctype="multipart/form-data" action="/api/addbook">
+        <form class="form-horizontal" onsubmit="return validateForm()" id="upload" method="POST" enctype="multipart/form-data" action="/api/addbook">
             <div class="form-group">
                 <div class="row">
                     <div class="col-sm-3">
@@ -163,6 +168,12 @@
     <script src="/static/jquery/jquery-3.3.1.min.js"></script>
     <script>
         
+        $(document).ready(function(){
+            $("#upload").submit(function(event){
+                event.preventDefault;
+            });
+        });
+
         function validateForm() {
 
             // clear previous warnings
@@ -191,8 +202,7 @@
                 $("#category_error").html('En az bir kategori seçiniz.');
                 return false;
             }
-
-          
+ 
             year = $("#year").val();
             year.trim();
             var patern = new RegExp("[0-9]{4}");
