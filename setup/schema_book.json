@@ -1,130 +1,168 @@
 {
   "settings": {
-    "number_of_shards": 1,
-    "number_of_replicas": 0,
+    "number_of_shards": "1",
+    "number_of_replicas": "0",
     "analysis": {
       "filter": {
-        "shingle_filter": {
-          "type": "shingle",
-          "min_shingle_size": 2,
-          "max_shingle_size": 2,
-          "output_unigrams": false
-        },
         "shingle_filter_suggester": {
-          "type": "shingle",
-          "min_shingle_size": 2,
-          "max_shingle_size": 3
-        },
-        "turkish_stop": {
-          "type": "stop",
-          "stopwords": "_turkish_"
+          "max_shingle_size": "3",
+          "min_shingle_size": "2",
+          "type": "shingle"
         },
         "turkish_lowercase": {
           "type": "lowercase",
           "language": "turkish"
         },
-        "turkish_keywords": {
-          "type": "keyword_marker",
-          "keywords": [
-            ""
-          ]
+        "turkish_synonym": {
+          "type": "synonym",
+          "synonyms_path": "analysis/turkish_synonym.txt"
+        },
+        "shingle_filter": {
+          "max_shingle_size": "2",
+          "min_shingle_size": "2",
+          "output_unigrams": "false",
+          "type": "shingle"
+        },
+        "turkish_stop": {
+          "type": "stop",
+          "stopwords": "_turkish_"
         },
         "turkish_stemmer": {
           "type": "stemmer",
           "language": "turkish"
         },
-        "turkish_synonym": {
-          "type": "synonym",
-          "synonyms_path": "analysis/turkish_synonym.txt"
+        "turkish_keywords": {
+          "keywords": [
+            ""
+          ],
+          "type": "keyword_marker"
         }
       },
       "analyzer": {
-        "shingle_analyzer": {
+        "trigram": {
+          "filter": [
+            "turkish_lowercase",
+            "shingle_filter_suggester"
+          ],
           "type": "custom",
-          "tokenizer": "standard",
+          "tokenizer": "standard"
+        },
+        "shingle_analyzer": {
           "filter": [
             "apostrophe",
             "turkish_lowercase",
             "turkish_keywords",
             "turkish_synonym",
             "shingle_filter"
-          ]
+          ],
+          "type": "custom",
+          "tokenizer": "standard"
         },
         "turkish_analyzer": {
-          "type": "custom",
-          "tokenizer": "standard",
           "filter": [
             "apostrophe",
             "turkish_lowercase",
             "turkish_synonym"
-          ]
+          ],
+          "type": "custom",
+          "tokenizer": "standard"
         },
         "turkish_simple": {
-          "type": "custom",
-          "tokenizer": "standard",
           "filter": [
             "apostrophe",
             "turkish_lowercase"
-          ]
-        },
-        "trigram": {
+          ],
           "type": "custom",
-          "tokenizer": "standard",
-          "filter": [
-            "turkish_lowercase",
-            "shingle_filter_suggester"
-          ]
+          "tokenizer": "standard"
         }
       }
     }
   },
-  "mappings": {
-    "novel": {
-      "properties": {
-        "title": {
-          "type": "text",
-          "analyzer": "turkish_analyzer",
-          "fields": {
-            "raw": {
-              "type": "text",
-              "analyzer": "turkish_simple"
+  "book": {
+    "mappings": {
+      "novel": {
+        "properties": {
+          "ContentHighlight": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword"
+              }
             }
-          }
-        },
-        "page": {
-          "type": "integer"
-        },
-        "year": {
-          "type": "integer"
-        },
-        "department": {
-          "type": "keyword"
-        },
-        "genre": {
-          "type": "keyword"
-        },
-        "category": {
-          "type": "keyword"
-        },
-        "content": {
-          "type": "text",
-          "analyzer": "turkish_analyzer",
-          "fields": {
-            "raw": {
-              "type": "text",
-              "analyzer": "turkish_simple"
-            },
-            "bigrammed": {
-              "type": "text",
-              "analyzer": "shingle_analyzer"
-            },
-            "trigram": {
-              "type": "text",
-              "analyzer": "trigram"
+          },
+          "Id": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword"
+              }
             }
+          },
+          "TitleHighlight": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword"
+              }
+            }
+          },
+          "category": {
+            "type": "keyword"
+          },
+          "content": {
+            "type": "text",
+            "fields": {
+              "bigrammed": {
+                "type": "text",
+                "analyzer": "shingle_analyzer"
+              },
+              "raw": {
+                "type": "text",
+                "analyzer": "turkish_simple"
+              },
+              "trigram": {
+                "type": "text",
+                "analyzer": "trigram"
+              }
+            },
+            "analyzer": "turkish_analyzer"
+          },
+          "department": {
+            "type": "keyword"
+          },
+          "genre": {
+            "type": "keyword"
+          },
+          "num_pages": {
+            "type": "integer"
+          },
+          "page": {
+            "type": "integer"
+          },
+          "serial": {
+            "type": "text",
+            "fields": {
+              "keyword": {
+                "type": "keyword"
+              }
+            }
+          },
+          "title": {
+            "type": "text",
+            "fields": {
+              "raw": {
+                "type": "text",
+                "analyzer": "turkish_simple"
+              }
+            },
+            "analyzer": "turkish_analyzer"
+          },
+          "year": {
+            "type": "integer"
           }
         }
       }
     }
   }
 }
+
