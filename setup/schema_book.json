@@ -78,88 +78,86 @@
       }
     }
   },
-  "book": {
-    "mappings": {
-      "novel": {
-        "properties": {
-          "ContentHighlight": {
-            "type": "text",
-            "fields": {
-              "keyword": {
-                "type": "keyword"
-              }
+  "mappings": {
+    "novel": {
+      "properties": {
+        "ContentHighlight": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword"
             }
-          },
-          "Id": {
-            "type": "text",
-            "fields": {
-              "keyword": {
-                "type": "keyword"
-              }
-            }
-          },
-          "TitleHighlight": {
-            "type": "text",
-            "fields": {
-              "keyword": {
-                "type": "keyword"
-              }
-            }
-          },
-          "category": {
-            "type": "keyword"
-          },
-          "content": {
-            "type": "text",
-            "fields": {
-              "bigrammed": {
-                "type": "text",
-                "analyzer": "shingle_analyzer"
-              },
-              "raw": {
-                "type": "text",
-                "analyzer": "turkish_simple"
-              },
-              "trigram": {
-                "type": "text",
-                "analyzer": "trigram"
-              }
-            },
-            "analyzer": "turkish_analyzer"
-          },
-          "department": {
-            "type": "keyword"
-          },
-          "genre": {
-            "type": "keyword"
-          },
-          "num_pages": {
-            "type": "integer"
-          },
-          "page": {
-            "type": "integer"
-          },
-          "serial": {
-            "type": "text",
-            "fields": {
-              "keyword": {
-                "type": "keyword"
-              }
-            }
-          },
-          "title": {
-            "type": "text",
-            "fields": {
-              "raw": {
-                "type": "text",
-                "analyzer": "turkish_simple"
-              }
-            },
-            "analyzer": "turkish_analyzer"
-          },
-          "year": {
-            "type": "integer"
           }
+        },
+        "Id": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword"
+            }
+          }
+        },
+        "TitleHighlight": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword"
+            }
+          }
+        },
+        "category": {
+          "type": "keyword"
+        },
+        "content": {
+          "type": "text",
+          "fields": {
+            "bigrammed": {
+              "type": "text",
+              "analyzer": "shingle_analyzer"
+            },
+            "raw": {
+              "type": "text",
+              "analyzer": "turkish_simple"
+            },
+            "trigram": {
+              "type": "text",
+              "analyzer": "trigram"
+            }
+          },
+          "analyzer": "turkish_analyzer"
+        },
+        "department": {
+          "type": "keyword"
+        },
+        "genre": {
+          "type": "keyword"
+        },
+        "num_pages": {
+          "type": "integer"
+        },
+        "page": {
+          "type": "integer"
+        },
+        "serial": {
+          "type": "text",
+          "fields": {
+            "keyword": {
+              "type": "keyword"
+            }
+          }
+        },
+        "title": {
+          "type": "text",
+          "fields": {
+            "raw": {
+              "type": "text",
+              "analyzer": "turkish_simple"
+            }
+          },
+          "analyzer": "turkish_analyzer"
+        },
+        "year": {
+          "type": "integer"
         }
       }
     }
