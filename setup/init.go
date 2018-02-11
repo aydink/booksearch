@@ -43,7 +43,7 @@ func main() {
 		fmt.Println(err)
 	}
 
-	err = createIndex("ray", "schema_titles.json")
+	err = createIndex("ray", "schema_ray.json")
 	if err != nil {
 		fmt.Println(err)
 	}
