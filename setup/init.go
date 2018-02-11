@@ -16,7 +16,7 @@ func main() {
 	}
 
 	//delete indexes
-	err := deleteIndex("book")
+	err = deleteIndex("book")
 	if err != nil {
 		fmt.Println(err)
 	}
