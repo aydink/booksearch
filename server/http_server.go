@@ -33,6 +33,21 @@ func homeHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func searchHandler(w http.ResponseWriter, r *http.Request) {
+	v := r.URL.Query()
+	filters := getFilters(v)
+	/*
+		filterNames := []string{"genre", "department", "year", "category"}
+
+		v := r.URL.Query()
+
+		filters := make([][3]string, 0)
+
+		for _, name := range filterNames {
+			if v.Get(name) != "" {
+				filters = append(filters, [3]string{name, getFullFilterName(name), v.Get(name)})
+			}
+		}
+	*/
 
 	//t, err := template.ParseFiles("templates/search.html")
 	//t := template.Must(template.New("").Funcs(funcMap).ParseFiles("templates/search.html", "templates/partial_facet.html", "templates/partial_pagination.html", "templates/partial_definition.html"))
@@ -53,10 +68,12 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 	templateName := "search"
 
 	if searchType == "title" {
-		data = titleQuery(keywords, startInt, getFilters(r.URL.Path))
+		//data = titleQuery(keywords, startInt, getFilters(r.URL.Path))
+		data = titleQuery(keywords, startInt, filters)
 		templateName = "title"
 	} else {
-		data = query(keywords, startInt, getFilters(r.URL.Path))
+		//data = query(keywords, startInt, getFilters(r.URL.Path))
+		data = query(keywords, startInt, filters)
 	}
 
 	// show dictionary definion on only first page
@@ -68,21 +85,6 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Println(err)
 	}
-}
-
-func filterHandler(w http.ResponseWriter, r *http.Request) {
-
-	url := r.URL.Path
-	if strings.HasSuffix(url, "/") {
-		fmt.Println(url)
-		url = url[0 : len(url)-1]
-		fmt.Println(url)
-	}
-	filters := getFilters(url)
-
-	fmt.Fprintln(w, "filters:", filters, "<br>")
-	fmt.Fprintln(w, "path:", r.URL.Path, "numparts:", len(filters))
-
 }
 
 func pageHandler(w http.ResponseWriter, r *http.Request) {
@@ -198,7 +200,6 @@ func main() {
 	http.HandleFunc("/api/reindex", reindexHandler)
 
 	http.HandleFunc("/search/", searchHandler)
-	http.HandleFunc("/filter/", filterHandler)
 	http.HandleFunc("/page", pageHandler)
 	http.HandleFunc("/image", imageHandler)
 	http.HandleFunc("/download/", downloadHandler)

@@ -156,49 +156,69 @@
                 }
 
                 filters = temp;
+
+                console.log(filters);
+                
                 // refresh page with new filters
                 refreshFilters();
             }
 
             function refreshFilters() {
-                var url = location.protocol + '//' + location.host + "/search/";
+                // create map of querystring parameters, beware no duplicates allowed.
+                query = parseQuery(location.search);
+                delete query["genre"];
+                delete query["department"];
+                delete query["year"];
+                delete query["category"];
 
                 for (i = 0; i < filters.length; i++) {
-                    url = url + encodeURIComponent(filters[i].key) + "/" + encodeURIComponent(filters[i].value) + "/";
+                    //url = url + encodeURIComponent(filters[i].key) + "/" + encodeURIComponent(filters[i].value) + "/";
+                    query[filters[i].key] = filters[i].value;
+
                 }
+                // if exist remove start parameter
+                delete query["start"];
 
-                fullUrl = window.location.search;
-
-                var queryString = fullUrl.substring(fullUrl.indexOf('?') + 1);
-
-                // as we are adding or removing facet filters we need to remove start parameter from querystring
-                queryString = queryString.replace(/&start=[0-9]+/i, "")
-
-                console.log(url + "?" + queryString);
-                window.location = url + "?" + queryString;
+                window.location = location.protocol + '//' + location.host + location.pathname + "?" + serialize(query);
+            }
+            
+            // convert URL params to javascript map
+            function parseQuery(queryString) {
+                var query = {};
+                var pairs = (queryString[0] === '?' ? queryString.substr(1) : queryString).split('&');
+                for (var i = 0; i < pairs.length; i++) {
+                    var pair = pairs[i].split('=');
+                    pair[1] = pair[1].replace(/\+/g, '%20'); // handele + sign problem in query
+                    query[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1] || '');
+                }
+                return query;
             }
 
+            // convert javascript map to URL params
+            function serialize(obj) {
+                var str = [];
+                for (var p in obj)
+                    if (obj.hasOwnProperty(p)) {
+                        str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
+                    }
+                return str.join("&");
+            }
+
+            // navigate to desired page
             function gotoPage(start) {
-                var url = location.protocol + '//' + location.host + "/search/";
-
+                // create map of querystring parameters, beware no duplicates allowed.
+                query = parseQuery(location.search);
+             
                 for (i = 0; i < filters.length; i++) {
-                    url = url + encodeURIComponent(filters[i].key) + "/" + encodeURIComponent(filters[i].value) + "/";
+                    //url = url + encodeURIComponent(filters[i].key) + "/" + encodeURIComponent(filters[i].value) + "/";
+                    query[filters[i].key] = filters[i].value;
                 }
-
-                fullUrl = window.location.search;
-
-                var queryString = fullUrl.substring(fullUrl.indexOf('?') + 1);
-                console.log(url + "?" + queryString);
-
-                if (queryString.search(/&start=[0-9]+/i) > -1) {
-                    queryString = queryString.replace(/&start=[0-9]+/i, "&start=" + start)
-                } else {
-                    queryString = queryString + "&start=" + start;
-                }
-
-                window.location = url + "?" + queryString
+                // if exist remove start parameter
+                query["start"] = start;
+                window.location = location.protocol + '//' + location.host + location.pathname + "?" + serialize(query);
             }
 
+            // Jquery page load event
             $(document).ready(function () {
                 // focus and move cursor to the end of the text
                 $("#q").focus();

@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"net/url"
 	"strings"
 )
 
@@ -20,8 +21,21 @@ func getFullFilterName(key string) string {
 	return key
 }
 
+func getFilters(v url.Values) [][3]string {
+	filterNames := []string{"genre", "department", "year", "category"}
+
+	filters := make([][3]string, 0)
+
+	for _, name := range filterNames {
+		if v.Get(name) != "" {
+			filters = append(filters, [3]string{name, getFullFilterName(name), v.Get(name)})
+		}
+	}
+	return filters
+}
+
 // getFilterMap converts url path to key value filter map
-func getFilters(url string) [][3]string {
+func getFilters_old(url string) [][3]string {
 	fmt.Println("url path:", url)
 
 	// for consistency strip trailing "/" path seperator at the end of the path

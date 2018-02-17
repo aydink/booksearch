@@ -6,7 +6,7 @@
     <div class="col-lg-7 py-0">
         <form method="GET" action="/search/">
         <div class="input-group">
-            <input type="text" class="form-control" name="q" id="q" value="{{.q}}" aria-label="Aramak istediğiniz ifadeyi yazınız">
+            <input type="text" class="form-control" name="q" id="q" value="{{tohtml .q}}" aria-label="Aramak istediğiniz ifadeyi yazınız">
         
             &nbsp;
             

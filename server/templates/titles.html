@@ -129,87 +129,118 @@
         <script src="/static/bootstrap-4/js/bootstrap.min.js"></script>
         <script>
 
-            var filters = [];
-            {{range.filters}} filters.push({ "key": "{{index . 0}}", "value": "{{index . 2}}" });
-            {{end}}
+        var filters = [];
+        {{ range.filters }} filters.push({ "key": "{{index . 0}}", "value": "{{index . 2}}" });
+        {{ end }}
 
-            function addFilter(filter) {
+        function addFilter(filter) {
 
-                for (i = 0; i < filters.length; i++) {
-                    if (filter.key == filters[i].key) {
-                        return;
-                    }
+            for (i = 0; i < filters.length; i++) {
+                if (filter.key == filters[i].key) {
+                    return;
                 }
-                filters.push(filter);
-                console.log(filters);
+            }
+            filters.push(filter);
+            console.log(filters);
 
-                // refresh page with new filters
-                refreshFilters();
+            // refresh page with new filters
+            refreshFilters();
+        }
+
+        function removeFilter(key) {
+            var temp = [];
+            for (i = 0; i < filters.length; i++) {
+                console.log("key:", key, filters[i]);
+                if (key != filters[i].key) {
+                    temp.push(filters[i]);
+                }
             }
 
-            function removeFilter(key) {
-                var temp = [];
-                for (i = 0; i < filters.length; i++) {
-                    console.log("key:", key, filters[i]);
-                    if (key != filters[i].key) {
-                        temp.push(filters[i]);
-                    }
-                }
+            filters = temp;
 
-                filters = temp;
-                // refresh page with new filters
-                refreshFilters();
+            console.log(filters);
+            
+            // refresh page with new filters
+            refreshFilters();
+        }
+
+        function refreshFilters() {
+            // create map of querystring parameters, beware no duplicates allowed.
+            query = parseQuery(location.search);
+            delete query["genre"];
+            delete query["department"];
+            delete query["year"];
+            delete query["category"];
+
+            for (i = 0; i < filters.length; i++) {
+                //url = url + encodeURIComponent(filters[i].key) + "/" + encodeURIComponent(filters[i].value) + "/";
+                query[filters[i].key] = filters[i].value;
+
             }
+            // if exist remove start parameter
+            delete query["start"];
 
-            function refreshFilters() {
-                var url = location.protocol + '//' + location.host + "/search/";
-
-                for (i = 0; i < filters.length; i++) {
-                    url = url + encodeURIComponent(filters[i].key) + "/" + encodeURIComponent(filters[i].value) + "/";
-                }
-
-                fullUrl = window.location.search;
-
-                var queryString = fullUrl.substring(fullUrl.indexOf('?') + 1);
-
-                // as we are adding or removing facet filters we need to remove start parameter from querystring
-                queryString = queryString.replace(/&start=[0-9]+/i, "")
-
-                console.log(url + "?" + queryString);
-                window.location = url + "?" + queryString;
+            window.location = location.protocol + '//' + location.host + location.pathname + "?" + serialize(query);
+        }
+        
+        // convert URL params to javascript map
+        function parseQuery(queryString) {
+            var query = {};
+            var pairs = (queryString[0] === '?' ? queryString.substr(1) : queryString).split('&');
+            for (var i = 0; i < pairs.length; i++) {
+                var pair = pairs[i].split('=');
+                pair[1] = pair[1].replace(/\+/g, '%20'); // handele + sign problem in query
+                query[decodeURIComponent(pair[0])] = decodeURIComponent(pair[1] || '');
             }
+            return query;
+        }
 
-            function gotoPage(start) {
-                var url = location.protocol + '//' + location.host + "/search/";
-
-                for (i = 0; i < filters.length; i++) {
-                    url = url + encodeURIComponent(filters[i].key) + "/" + encodeURIComponent(filters[i].value) + "/";
+        // convert javascript map to URL params
+        function serialize(obj) {
+            var str = [];
+            for (var p in obj)
+                if (obj.hasOwnProperty(p)) {
+                    str.push(encodeURIComponent(p) + "=" + encodeURIComponent(obj[p]));
                 }
+            return str.join("&");
+        }
 
-                fullUrl = window.location.search;
-               
-                var queryString = fullUrl.substring(fullUrl.indexOf('?') + 1);
-                console.log(url + "?" + queryString);
+        // navigate to desired page
+        function gotoPage(start) {
+            // create map of querystring parameters, beware no duplicates allowed.
+            query = parseQuery(location.search);
 
-                if (queryString.search(/&start=[0-9]+/i) > -1) {
-                    queryString = queryString.replace(/&start=[0-9]+/i, "&start=" + start)
+            for (i = 0; i < filters.length; i++) {
+                //url = url + encodeURIComponent(filters[i].key) + "/" + encodeURIComponent(filters[i].value) + "/";
+                query[filters[i].key] = filters[i].value;
+            }
+            // if exist remove start parameter
+            query["start"] = start;
+            window.location = location.protocol + '//' + location.host + location.pathname + "?" + serialize(query);
+        }
+
+        // Jquery page load event
+        $(document).ready(function () {
+            // focus and move cursor to the end of the text
+            $("#q").focus();
+            $("#q").val($("#q").val());
+
+            {{ range.filters }}
+            $("#filter-{{index . 0}}").on('closed.bs.alert', function () {
+                removeFilter("{{index . 0}}");
+            });
+            {{ end }}
+
+
+            $(".dropdown-menu a").click(function(){
+                var selText = $(this).text();
+                if (selText == "Kitap adında") {
+                    $("#w").val("title")
                 } else {
-                    queryString = queryString + "&start=" + start;
+                    $("#w").val("content")
                 }
-
-                window.location = url + "?" + queryString
-            }
-
-            $(document).ready(function () {
-                // focus and move cursor to the end of the text
-                $("#q").focus();
-                $("#q").val($("#q").val());
-
-                {{range.filters}}
-                $("#filter-{{index . 0}}").on('closed.bs.alert', function () {
-                    removeFilter("{{index . 0}}");
+                $(this).parents('.btn-group').find('.dropdown-toggle').html(selText+' <span class="caret"></span>');
                 });
-                {{end}}
             });
         </script>
 </body>
