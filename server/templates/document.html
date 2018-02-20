@@ -267,6 +267,22 @@
         console.log('Query variable %s not found', variable);
     }
 
+        $(document).ready(function () {
+            $("body").keydown(function (event) {
+                if  ($('#q').is(':focus') == false) {
+                    if (event.which == 39) {
+                        loadPage(1);
+                        //event.preventDefault();
+                    }
+
+                    if (event.which == 37) {
+                        loadPage(-1);
+                        //event.preventDefault();
+                    }
+                }
+            });
+        });
+
 
 </script>
 </body>
