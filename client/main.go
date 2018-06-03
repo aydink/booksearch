@@ -143,7 +143,7 @@ func uploadBooks(csvFile string) {
 
 		fmt.Println(record[2])
 
-		err = Upload("http://localhost:8080/api/addbook", "/Users/aydink/Downloads/kanunlar/"+record[0], book)
+		err = Upload("http://localhost:8080/api/addbook", "d:/aselsan/"+record[0], book)
 		if err != nil {
 			fmt.Println(err)
 		}

@@ -74,6 +74,15 @@ func searchHandler(w http.ResponseWriter, r *http.Request) {
 	} else {
 		//data = query(keywords, startInt, getFilters(r.URL.Path))
 		data = query(keywords, startInt, filters)
+
+		//here we will show book titles that mathes most of (%60) of keywords
+		//it is smiliar to providing wikipedia definition for given keywords
+		//only if we are displaying the first page of search result. Otherwise
+		//it is meaningless to display best mathing book titles.
+		if startInt == 0 {
+			titles := titleQuerySimple(keywords)
+			data["titles"] = titles["books"]
+		}
 	}
 
 	// show dictionary definion on only first page

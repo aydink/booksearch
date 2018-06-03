@@ -50,6 +50,14 @@
             font-style: normal;
         }
 
+        div.book-title {
+            font-size: 16px;
+            font-weight: normal;  
+            line-height: 2em;
+        }
+
+
+
         dd>em {
             font-weight: 300;
             font-style: italic;
@@ -59,6 +67,10 @@
         .alert {
             display: inline-block;
         }
+
+        a {
+            color:rgb(26, 13, 171);
+        }
     </style>
 </head>
 
@@ -66,14 +78,14 @@
    
     {{template "navbar_search" .}}    
 
-    <div class="container">
+    <div class="container-fluid">
         <div class="row">
             <div class="col-lg-2 card rounded-0">
                 <div class="col-lg-12 px-0">
                     {{template "facet" .}}  
                 </div>
             </div>
-            <div class="col-lg-7">
+            <div class="col-lg-6">
                 <div class="col-lg-12 card rounded-0">
                     <div class="row px-1">
                         {{range .filters}}
@@ -93,6 +105,7 @@
 
                                 <em>Bulunan kayıt sayısı:</em> {{.TotalHits}}
                             </div>
+                  
                             <br>
                             {{range $doc := .docs}}
                             <div class="hit-title">
@@ -115,8 +128,17 @@
                 </div>
             </div>
 
-            <div class="col-lg-3 card rounded-0">
+            <div class="col-lg-4 card rounded-0">
                 {{template "definition" .}}
+                <br><br>
+                {{if .titles}}
+                <h4>Dokümanlar</h4>
+                {{range .titles}}
+                <div class="book-title">
+                    - <a href="/download?book={{.Id}}">{{.Title | tohtml}}</a>
+                </div>
+                {{end}}
+                {{end}}
             </div>
         </div>
 

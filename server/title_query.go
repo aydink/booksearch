@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"strconv"
+	"strings"
 
 	"github.com/olivere/elastic"
 )
@@ -193,6 +194,96 @@ func titleQuery(keywords string, start int, filters [][3]string) map[string]inte
 		}
 	*/
 	data["pages"] = paginate(start, 10, int(searchResult.TotalHits()))
+
+	return data
+}
+
+//func query(keywords string, filterMap map[string]string) map[string]interface{} {
+// titleQuerySimple is used for displaying mathing documents for given keywords,
+// paging and filtering is not supported.
+func titleQuerySimple(keywords string) map[string]interface{} {
+
+	fmt.Println("keywords:", keywords)
+
+	ctx := context.Background()
+
+	url := "http://127.0.0.1:9200"
+
+	//Create an Elasticsearch client
+	client, err := elastic.NewClient(elastic.SetURL(url), elastic.SetSniff(true))
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	boolQuery := elastic.NewBoolQuery()
+	boolQuery = boolQuery.Must(elastic.NewMatchQuery("titlefull", keywords).Operator("AND"))
+	boolQuery = boolQuery.MinimumShouldMatch("60%")
+
+	printQuery(boolQuery)
+
+	higlight := elastic.NewHighlight()
+	higlight = higlight.Field("titlefull")
+	higlight = higlight.FragmentSize(200)
+	higlight = higlight.NumOfFragments(1)
+
+	printQuery(higlight)
+
+	search := client.Search().
+		Index("ray").       // search in index "twitter"
+		Query(boolQuery).   // specify the query
+		From(0).Size(10).   // take documents 0-9
+		Pretty(true).       // pretty print request and response JSON
+		Highlight(higlight) // Highlight results
+
+	searchResult, err := search.Do(ctx) // execute
+	if err != nil {
+		// Handle error
+		// panic(err)
+		fmt.Println(err)
+	}
+
+	// searchResult is of type SearchResult and returns hits, suggestions,
+	// and all kinds of other information from Elasticsearch.
+	fmt.Printf("Query took %d milliseconds\n", searchResult.TookInMillis)
+
+	fmt.Println(searchResult.TotalHits())
+
+	data := make(map[string]interface{}, 0)
+	data["TotalHits"] = searchResult.TotalHits()
+
+	books := make([]Book, 0, 10)
+
+	// Iterate through results
+	for _, hit := range searchResult.Hits.Hits {
+		// hit.Index contains the name of the index
+
+		// Deserialize hit.Source into a Tweet (could also be just a map[string]interface{}).
+		b := Book{}
+		err := json.Unmarshal(*hit.Source, &b)
+		if err != nil {
+			// Deserialization failed
+			fmt.Println(err)
+		}
+
+		b.Id = hit.Id
+
+		b.Title = strings.Join(hit.Highlight["titlefull"], " ")
+		books = append(books, b)
+
+		//fmt.Println(hit.Highlight["titlefull"])
+
+		// Work with tweet
+		//fmt.Printf("%s\n%s\n%d\n----\n", t.Title, t.Genre, t.Page)
+	}
+
+	hasResult := true
+	if searchResult.TotalHits() == 0 {
+		hasResult = false
+	}
+
+	data["q"] = keywords
+	data["books"] = books
+	data["hasResult"] = hasResult
 
 	return data
 }
