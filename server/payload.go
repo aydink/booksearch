@@ -9,7 +9,6 @@ import (
 
 	"github.com/olivere/elastic"
 
-	"encoding/gob"
 	"encoding/json"
 	"fmt"
 	"math"
@@ -17,7 +16,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/dgraph-io/badger"
 	"golang.org/x/net/html"
 )
 
@@ -32,9 +30,6 @@ type Payload struct {
 	Key   string              `json:"key"`
 	Value map[string][][4]int `json:"value"`
 }
-
-//var db *kv.DB
-var db *badger.DB
 
 var dict map[string]string
 var replacer *strings.Replacer
@@ -52,44 +47,11 @@ func Stem(token string) string {
 	return token
 }
 
-func EncodePayload(m map[string][]BBox) []byte {
-	var b bytes.Buffer
-	w := bufio.NewWriter(&b)
-
-	encoder := gob.NewEncoder(w)
-	err := encoder.Encode(m)
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	return b.Bytes()
-}
-
-func DecodePayload(data []byte) map[string][]BBox {
-	r := bytes.NewReader(data)
-
-	payload := make(map[string][]BBox)
-
-	decoder := gob.NewDecoder(r)
-	err := decoder.Decode(&payload)
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	//fmt.Println(payload)
-
-	return payload
-}
-
 func GetTokenPositions(page string, tokens []string) string {
-	//fmt.Println("page::::::::::", page, tokens)
-
 	/*
 		jsonStr := GetPage(page)
 
 		allTokens := make(map[string][][4]int)
-
-
 		filteredTokens := make(map[string][][4]int)
 
 		err := json.Unmarshal(jsonStr, &allTokens)
@@ -114,48 +76,6 @@ func GetTokenPositions(page string, tokens []string) string {
 	}
 
 	return string(jsonString)
-}
-
-func SavePage(key, value []byte) {
-
-	err := db.Update(func(txn *badger.Txn) error {
-		err := txn.Set(key, value)
-		return err
-	})
-
-	if err != nil {
-		fmt.Println(err)
-	}
-
-}
-
-func GetPage(key string) []byte {
-	//fmt.Println("Load page:", key)
-	getPaylod(key)
-
-	var s []byte
-
-	err := db.View(func(txn *badger.Txn) error {
-		item, err := txn.Get([]byte(key))
-		if err != nil {
-			return err
-		}
-
-		val, err := item.Value()
-		//fmt.Println("length of slice:", len(val))
-		s = val
-		if err != nil {
-			return err
-		}
-		return nil
-	})
-
-	if err != nil {
-		log.Printf("loagind payloads for page:%s failed, error:%s\n", key, err)
-	}
-	//fmt.Println("length of slice:", len(s))
-	//fmt.Println(string(v))
-	return s
 }
 
 func QueryStringTokens(page string, q string) string {
@@ -292,13 +212,12 @@ func ProcessPayloadFile(hash string) {
 				if err != nil {
 					log.Fatalln(jsonStr)
 				}
-				//SavePage([]byte(key), EncodePayload(tokens))
-				SavePage([]byte(key), jsonStr)
+				//SavePage([]byte(key), jsonStr)
 
 				payload := &Payload{Key: hash, Value: tokens}
 				payloadJson, err := json.Marshal(payload)
 				if err != nil {
-					log.Fatalln(payloadJson)
+					log.Fatalf("failed the marshall payloads:%s\n", err)
 				}
 
 				buf.WriteString("{ \"index\" : { \"_index\" : \"payload\", \"_type\" : \"data\", \"_id\": \"" + key + "\" } }")
@@ -367,86 +286,8 @@ func getPaylod(id string) (map[string][][4]int, error) {
 }
 
 func init() {
-
-	// delete bager kv store lcg file
-	os.Remove("data/badger/LOCK")
-
 	dict = loadTurkishStems()
 	fmt.Println("stemmer dictionart loaded:", len(dict), "items")
 
 	replacer = strings.NewReplacer("â", "a", "î", "i", "û", "u")
-
-	//db = OpenDatabase()
-
-	var err error
-
-	opts := badger.DefaultOptions
-	opts.Dir = "data/badger"
-	opts.ValueDir = "data/badger"
-	db, err = badger.Open(opts)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-	//defer db.Close()
-
-}
-
-func main2() {
-
-	/*
-			book := flag.String("book", "", "name of the book")
-			page := flag.String("page", "1", "page numbers")
-
-			htmlDir := flag.String("html", "", "directory containing html files with bbox values")
-
-			flag.Parse()
-
-			//db = OpenDatabase()
-
-			//db.BeginTransaction()
-
-
-
-				if *htmlDir != "" {
-					ProcessFiles(*htmlDir)
-				} else {
-					fmt.Println(*book + "-" + *page)
-					GetPage(*book + "-" + *page)
-				}
-
-				k, v, e := db.Last()
-
-				fmt.Println(string(k), string(v), e)
-
-				//db.Commit()
-
-				//GetPage("test-10")
-				db.Close()
-
-				//ExampleRemove(s)
-				//SavePayload()
-
-
-		db.BeginTransaction()
-
-		ProcessBBOXFile("test.html")
-
-		db.Commit()
-
-		//GetPage("test-40")
-		//fmt.Println(GetTokenPositions("test-40", []string{"yer", "iç"}))
-
-		s := "kimse insan haysîyetiyle bağdaşmayan bir cezaya veya muameleye TÂBÎ tutulamaz"
-		sonuc := QueryStringTokens("test-3", s)
-		fmt.Println(sonuc)
-
-		db.Close()
-	*/
-
-	ProcessPayloadFile("34a5e226ff1d8bcd402ee23c716ac40b")
-
-	page := "34a5e226ff1d8bcd402ee23c716ac40b-24"
-	q := "bakanlar"
-	fmt.Println(QueryStringTokens(page, q))
 }
