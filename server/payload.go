@@ -3,8 +3,11 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"log"
 	"unicode"
+
+	"github.com/olivere/elastic"
 
 	"encoding/gob"
 	"encoding/json"
@@ -25,6 +28,11 @@ type BBox struct {
 	YMax int16
 }
 
+type Payload struct {
+	Key   string              `json:"key"`
+	Value map[string][][4]int `json:"value"`
+}
+
 //var db *kv.DB
 var db *badger.DB
 
@@ -35,54 +43,12 @@ var f = func(c rune) bool {
 	return !unicode.IsLetter(c) && !unicode.IsNumber(c)
 }
 
-func int16ToBytes(x int16) []byte {
-	var buf [2]byte
-	buf[0] = byte(x >> 0)
-	buf[1] = byte(x >> 8)
-	return buf[:]
-}
-
-func bytesToInt16le(b []byte) int16 {
-	return int16(uint16(b[0]) | uint16(b[1])<<8)
-}
-
 func Stem(token string) string {
-	// lowercase string and replace "â", "a", "î", "i", "û", "u" accented characters
-	//token = strings.ToLowerSpecial(unicode.TurkishCase, token)
-	//token = replacer.Replace(token)
-	// token = strings.ToLower(token)
-
-	//parts := strings.FieldsFunc(token, f)
-
-	/*
-		token = strings.Trim(token, ".")
-		token = strings.Trim(token, ",")
-		token = strings.Trim(token, ":")
-		token = strings.Trim(token, ";")
-		token = strings.Trim(token, "\"")
-		token = strings.Trim(token, "/")
-		token = strings.Trim(token, "'")
-		token = strings.Trim(token, "!")
-		token = strings.Trim(token, "?")
-		token = strings.Trim(token, "-")
-		token = strings.Trim(token, ")")
-		token = strings.Trim(token, "(")
-		token = strings.Trim(token, "{")
-		token = strings.Trim(token, "{")
-		token = strings.Trim(token, "[")
-		token = strings.Trim(token, "]")
-		//fmt.Println(token)
-		//return porterstemmer.StemString(token)
-	*/
-
-	//fmt.Println("****")
-	//fmt.Println("input:", token)
 
 	if val, ok := dict[token]; ok {
 		token = val
 	}
 	//fmt.Println("output:", token)
-
 	return token
 }
 
@@ -118,18 +84,28 @@ func DecodePayload(data []byte) map[string][]BBox {
 func GetTokenPositions(page string, tokens []string) string {
 	//fmt.Println("page::::::::::", page, tokens)
 
-	jsonStr := GetPage(page)
+	/*
+		jsonStr := GetPage(page)
 
-	allTokens := make(map[string][][4]int)
+		allTokens := make(map[string][][4]int)
+
+
+		filteredTokens := make(map[string][][4]int)
+
+		err := json.Unmarshal(jsonStr, &allTokens)
+		if err != nil {
+			log.Println(err)
+		}
+	*/
 	filteredTokens := make(map[string][][4]int)
+	allTokens, err := getPaylod(page)
 
-	err := json.Unmarshal(jsonStr, &allTokens)
-	if err != nil {
-		log.Println(err)
-	}
-
-	for _, token := range tokens {
-		filteredTokens[token] = allTokens[token]
+	if err == nil {
+		for _, token := range tokens {
+			filteredTokens[token] = allTokens[token]
+		}
+	} else {
+		log.Printf("failed to get payloads for page:%s\n", page)
 	}
 
 	jsonString, err := json.Marshal(filteredTokens)
@@ -155,6 +131,8 @@ func SavePage(key, value []byte) {
 
 func GetPage(key string) []byte {
 	//fmt.Println("Load page:", key)
+	getPaylod(key)
+
 	var s []byte
 
 	err := db.View(func(txn *badger.Txn) error {
@@ -201,7 +179,23 @@ func QueryStringTokens(page string, q string) string {
 	return GetTokenPositions(page, tokens)
 }
 
+/*
+ProcessPayloadFile read and stores token positions in Elasticsearch
+"payload" index using "data" type. Id of the document is hash + "-" + page
+sample document
+
+{
+	"key": "md5 hash of the book",
+	"value" : {
+		"token1": [[1,2,3,4], [4,5,6,7]],
+		"token2": [[11,12,13,14], [14,15,16,17], [8,9,11,13]]
+	}
+}
+
+*/
 func ProcessPayloadFile(hash string) {
+
+	var buf bytes.Buffer
 
 	var pageNumber int
 	file, err := os.Open("books/" + hash + ".bbox.txt")
@@ -221,6 +215,8 @@ func ProcessPayloadFile(hash string) {
 
 		switch tt {
 		case html.ErrorToken:
+			postToElasticsearch(buf.Bytes())
+			fmt.Println(buf.String())
 			return
 
 		case html.StartTagToken:
@@ -298,6 +294,17 @@ func ProcessPayloadFile(hash string) {
 				}
 				//SavePage([]byte(key), EncodePayload(tokens))
 				SavePage([]byte(key), jsonStr)
+
+				payload := &Payload{Key: hash, Value: tokens}
+				payloadJson, err := json.Marshal(payload)
+				if err != nil {
+					log.Fatalln(payloadJson)
+				}
+
+				buf.WriteString("{ \"index\" : { \"_index\" : \"payload\", \"_type\" : \"data\", \"_id\": \"" + key + "\" } }")
+				buf.WriteString("\n")
+				buf.WriteString(string(payloadJson))
+				buf.WriteString("\n")
 			}
 		}
 	}
@@ -323,6 +330,40 @@ func loadTurkishStems() map[string]string {
 	}
 
 	return dict
+}
+
+// get payload for specific page
+func getPaylod(id string) (map[string][][4]int, error) {
+	//fmt.Println("id:", id)
+	ctx := context.Background()
+	url := "http://127.0.0.1:9200"
+
+	//Create an Elasticsearch client
+	client, err := elastic.NewClient(elastic.SetURL(url), elastic.SetSniff(true))
+	if err != nil {
+		log.Fatal(err)
+	}
+	doc, err := client.Get().
+		Index("payload").
+		Type("data").
+		Id(id).Do(ctx)
+
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+
+	//fmt.Printf("%+v", doc)
+
+	var p Payload
+	err = json.Unmarshal(*doc.Source, &p)
+	if err != nil {
+		fmt.Println(err)
+		return nil, err
+	}
+
+	//fmt.Printf("%+v", p)
+	return p.Value, nil
 }
 
 func init() {
