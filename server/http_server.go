@@ -138,7 +138,7 @@ func imageHandler(w http.ResponseWriter, r *http.Request) {
 
 func reindexHandler(w http.ResponseWriter, r *http.Request) {
 	go reindexAllFiles()
-	fmt.Fprint(w, "Reindeing all pdf files")
+	fmt.Fprint(w, "Reindexing all pdf files")
 }
 
 func createImage(query string) {

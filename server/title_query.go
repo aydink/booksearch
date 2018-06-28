@@ -216,13 +216,13 @@ func titleQuerySimple(keywords string) map[string]interface{} {
 	}
 
 	boolQuery := elastic.NewBoolQuery()
-	boolQuery = boolQuery.Must(elastic.NewMatchQuery("titlefull", keywords).Operator("AND"))
-	boolQuery = boolQuery.MinimumShouldMatch("60%")
+	boolQuery = boolQuery.Must(elastic.NewMatchQuery("title", keywords).Operator("AND"))
+	//boolQuery = boolQuery.MinimumShouldMatch("60%")
 
 	printQuery(boolQuery)
 
 	higlight := elastic.NewHighlight()
-	higlight = higlight.Field("titlefull")
+	higlight = higlight.Field("title")
 	higlight = higlight.FragmentSize(200)
 	higlight = higlight.NumOfFragments(1)
 
@@ -267,10 +267,10 @@ func titleQuerySimple(keywords string) map[string]interface{} {
 
 		b.Id = hit.Id
 
-		b.Title = strings.Join(hit.Highlight["titlefull"], " ")
+		b.Title = strings.Join(hit.Highlight["title"], " ")
 		books = append(books, b)
 
-		//fmt.Println(hit.Highlight["titlefull"])
+		fmt.Println(hit.Highlight["title"])
 
 		// Work with tweet
 		//fmt.Printf("%s\n%s\n%d\n----\n", t.Title, t.Genre, t.Page)
