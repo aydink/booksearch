@@ -20,17 +20,16 @@ func main() {
 	if err != nil {
 		fmt.Println(err)
 	}
-	
+
 	err = deleteIndex("dictionary")
 	if err != nil {
 		fmt.Println(err)
 	}
-	
+
 	err = deleteIndex("ray")
 	if err != nil {
 		fmt.Println(err)
 	}
-
 
 	// create indexes
 	err = createIndex("book", "schema_book.json")
@@ -44,6 +43,11 @@ func main() {
 	}
 
 	err = createIndex("ray", "schema_ray.json")
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	err = createIndex("payload", "schema_payload.json")
 	if err != nil {
 		fmt.Println(err)
 	}

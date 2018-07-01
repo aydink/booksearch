@@ -275,6 +275,9 @@ func reindexAllFiles() {
 			}
 			fmt.Println(book)
 			indexBook(book)
+
+			//store payload data in elasticsearch
+			ProcessPayloadFile(book.Hash)
 		}
 	}
 }
