@@ -28,7 +28,7 @@ func titleQuery(keywords string, start int, filters [][3]string) map[string]inte
 	}
 
 	boolQuery := elastic.NewBoolQuery()
-	boolQuery = boolQuery.Must(elastic.NewMatchQuery("titlefull", keywords).Operator("AND"))
+	boolQuery = boolQuery.Must(elastic.NewMatchQuery("title", keywords).Operator("AND"))
 	//boolQuery = boolQuery.MinimumShouldMatch("1")
 
 	for i := 0; i < len(filters); i++ {
@@ -217,6 +217,7 @@ func titleQuerySimple(keywords string) map[string]interface{} {
 
 	boolQuery := elastic.NewBoolQuery()
 	boolQuery = boolQuery.Must(elastic.NewMatchQuery("title", keywords).Operator("AND"))
+	boolQuery = boolQuery.Should(elastic.NewMatchQuery("titlefull", keywords))
 	//boolQuery = boolQuery.MinimumShouldMatch("60%")
 
 	printQuery(boolQuery)
@@ -257,7 +258,7 @@ func titleQuerySimple(keywords string) map[string]interface{} {
 	for _, hit := range searchResult.Hits.Hits {
 		// hit.Index contains the name of the index
 
-		// Deserialize hit.Source into a Tweet (could also be just a map[string]interface{}).
+		// Deserialize hit.Source into a Book (could also be just a map[string]interface{}).
 		b := Book{}
 		err := json.Unmarshal(*hit.Source, &b)
 		if err != nil {
@@ -271,9 +272,6 @@ func titleQuerySimple(keywords string) map[string]interface{} {
 		books = append(books, b)
 
 		fmt.Println(hit.Highlight["title"])
-
-		// Work with tweet
-		//fmt.Printf("%s\n%s\n%d\n----\n", t.Title, t.Genre, t.Page)
 	}
 
 	hasResult := true

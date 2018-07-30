@@ -25,7 +25,7 @@ func pseudo_uuid() (uuid string) {
 	b := make([]byte, 16)
 	_, err := rand.Read(b)
 	if err != nil {
-		fmt.Println("Error: ", err)
+		log.Println("Error: ", err)
 		return
 	}
 
@@ -35,7 +35,7 @@ func pseudo_uuid() (uuid string) {
 	return
 }
 
-func ApiIndexFile(w http.ResponseWriter, r *http.Request) {
+func indexFileHandler(w http.ResponseWriter, r *http.Request) {
 	t := template.Must(template.New("").Funcs(funcMap).ParseGlob("templates/*.html"))
 
 	if r.Method == "GET" {
@@ -90,6 +90,9 @@ func processUploadedPdf(r *http.Request) (map[string]string, error) {
 	book := Book{}
 	book.Serial = serial
 	book.Title = title
+	if len(serial) > 0 {
+		book.Title = serial + " " + title
+	}
 	book.Department = department
 	book.Genre = genre
 	book.Category = category
@@ -98,13 +101,12 @@ func processUploadedPdf(r *http.Request) (map[string]string, error) {
 	if len(formErrors) > 0 {
 		log.Printf("/api/addbook errors:%s\n", formErrors)
 		return formErrors, errors.New("uploaded form has errors")
-		//fmt.Printf("%+v", book)
 	}
 
 	file, _, err := r.FormFile("file")
 	defer file.Close()
 	if err != nil {
-		fmt.Println("FormFile:", err)
+		log.Println("FormFile:", err)
 		return formErrors, err
 	}
 
@@ -129,7 +131,7 @@ func processUploadedPdf(r *http.Request) (map[string]string, error) {
 
 		f, err := os.Create("books/" + tempFileName)
 		if err != nil {
-			fmt.Println("OpenFile:", err)
+			log.Println("OpenFile:", err)
 			return formErrors, err
 		}
 
@@ -146,7 +148,7 @@ func processUploadedPdf(r *http.Request) (map[string]string, error) {
 		f.Close()
 		err = os.Rename("books/"+tempFileName, "books/"+md5string+".pdf")
 		if err != nil {
-			fmt.Println("File rename failed:", err)
+			log.Println("File rename failed:", err)
 			return formErrors, err
 		}
 
@@ -166,7 +168,7 @@ func processPdfFile(book Book) error {
 	//_, err := exec.Command("pdftocairo", "-png", "-singlefile", "-f", page, "-l", page, fileMap[hash], "static/images/"+hash+"-"+page).Output()
 	output, err := exec.Command("pdfinfo", "books/"+book.Hash+".pdf").Output()
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		return err
 	}
 
@@ -198,7 +200,7 @@ func processPdfFile(book Book) error {
 		}
 	}
 
-	// insert BBOX payload data into KV store
+	// insert BBOX payload data into Elasticsearch payload index
 	ProcessPayloadFile(book.Hash)
 
 	// send book to elasticsearh
@@ -273,7 +275,7 @@ func reindexAllFiles() {
 				log.Printf("loading file meta from json file:%s faied\n", err)
 				continue
 			}
-			fmt.Println(book)
+			log.Println(book)
 			indexBook(book)
 
 			//store payload data in elasticsearch

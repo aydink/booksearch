@@ -72,7 +72,7 @@ func GetTokenPositions(page string, tokens []string) string {
 
 	jsonString, err := json.Marshal(filteredTokens)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 	}
 
 	return string(jsonString)
@@ -120,7 +120,7 @@ func ProcessPayloadFile(hash string) {
 	var pageNumber int
 	file, err := os.Open("books/" + hash + ".bbox.txt")
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 	}
 
 	z := html.NewTokenizer(file)
@@ -136,7 +136,7 @@ func ProcessPayloadFile(hash string) {
 		switch tt {
 		case html.ErrorToken:
 			postToElasticsearch(buf.Bytes())
-			fmt.Println(buf.String())
+			//log.Println(buf.String())
 			return
 
 		case html.StartTagToken:
@@ -157,7 +157,7 @@ func ProcessPayloadFile(hash string) {
 				for _, w := range t.Attr {
 					n, err := strconv.ParseFloat(w.Val, 64)
 					if err != nil {
-						fmt.Println(err)
+						log.Println(err)
 					}
 					n = math.Floor(n + 0.5)
 					coor := int(n)
@@ -268,7 +268,7 @@ func getPaylod(id string) (map[string][][4]int, error) {
 		Id(id).Do(ctx)
 
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		return nil, err
 	}
 
@@ -277,7 +277,7 @@ func getPaylod(id string) (map[string][][4]int, error) {
 	var p Payload
 	err = json.Unmarshal(*doc.Source, &p)
 	if err != nil {
-		fmt.Println(err)
+		log.Println(err)
 		return nil, err
 	}
 
@@ -287,7 +287,7 @@ func getPaylod(id string) (map[string][][4]int, error) {
 
 func init() {
 	dict = loadTurkishStems()
-	fmt.Println("stemmer dictionart loaded:", len(dict), "items")
+	fmt.Println("stemmer dictionary loaded:", len(dict), "items")
 
 	replacer = strings.NewReplacer("â", "a", "î", "i", "û", "u")
 }

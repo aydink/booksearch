@@ -212,7 +212,7 @@ func main() {
 	http.HandleFunc("/page", pageHandler)
 	http.HandleFunc("/image", imageHandler)
 	http.HandleFunc("/download/", downloadHandler)
-	http.HandleFunc("/api/addbook", ApiIndexFile)
+	http.HandleFunc("/api/addbook", indexFileHandler)
 	http.HandleFunc("/api/payloads", payloadHandler)
 
 	http.Handle("/static/", http.StripPrefix("/static/", http.FileServer(http.Dir("./static"))))

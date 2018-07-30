@@ -31,6 +31,11 @@ func main() {
 		fmt.Println(err)
 	}
 
+	err = deleteIndex("payload")
+	if err != nil {
+		fmt.Println(err)
+	}
+
 	// create indexes
 	err = createIndex("book", "schema_book.json")
 	if err != nil {
