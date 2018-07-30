@@ -8,3 +8,5 @@ server/data/badger/*.*
 client/client
 client/client.exe
 vendor/
+setup/setup
+setup/setup.exe
