@@ -10,3 +10,4 @@ client/client.exe
 vendor/
 setup/setup
 setup/setup.exe
+server/server.exe
