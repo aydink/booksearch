@@ -1,6 +1,6 @@
 scripts/image/
 scripts/text/
-server/books/
+server/books/*.*
 server/static/images/*.*
 .server
 .server.exe
