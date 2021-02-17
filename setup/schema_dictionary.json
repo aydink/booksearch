@@ -1,0 +1,26 @@
+{
+    "settings": {
+      "number_of_shards": 1,
+      "number_of_replicas": 0
+    },
+    "mappings": {
+      "entry": {
+        "properties": {
+          "eng": {
+            "type": "keyword",
+            "fields": {
+              "raw": {
+                "type": "text",
+                "analyzer": "standard"
+              }
+            }
+          },
+          "tur": {
+            "type": "text",
+            "store": true,
+            "index": false
+          }
+        }
+      }
+    }
+  }

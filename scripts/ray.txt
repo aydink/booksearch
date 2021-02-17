@@ -1,0 +1,234 @@
+GET /kitap/ray/_search
+{
+  "query": {
+    "match": {
+      "content": "kışla gazinoları"
+    }
+  },
+  "aggs": {
+    "ray": {
+      "terms": {
+        "field": "konu"
+      }
+    }
+  },
+  "highlight": {
+    "fields": {
+      "content": {}
+    }
+  }
+}
+
+
+
+GET /kitap/ray/_search
+{
+  "query": {
+    "bool": {
+      "must": {
+        "match": {
+          "content": "yurt dışı sürekli görev yolluğu"
+        }
+      },
+      "should": {
+        "match": {
+          "content.shingle": "yurt dışı sürekli görev yolluğu"
+        }
+      }
+    }
+  },
+  "aggs": {
+    "ray": {
+      "terms": {
+        "field": "konu"
+      }
+    }
+  },
+  "highlight": {
+    "fields": {
+      "content": {}
+    }
+  }
+}
+
+
+PUT /kitap
+{
+	"settings": {
+		"number_of_shards": 1, 
+		"number_of_replicas": 0,
+		"analysis": {
+			"filter": {		
+				"my_shingle_filter": {
+					"type": "shingle",
+					"min_shingle_size": 2,
+					"max_shingle_size": 2,
+					"output_unigrams": false
+				},			
+			   "turkish_stop": {
+					"type":       "stop",
+					"stopwords":  "_turkish_" 
+				},
+				"turkish_lowercase": {
+					"type":       "lowercase",
+					"language":   "turkish"
+				},
+				"turkish_keywords": {
+					"type":       "keyword_marker",
+					"keywords":   ["aydın"] 
+				},
+				"turkish_stemmer": {
+					"type":       "stemmer",
+					"language":   "turkish"
+				}
+			},
+			"analyzer": {
+				"my_shingle_analyzer": {
+					"type": "custom",
+					"tokenizer": "standard",
+					"filter": [
+						"apostrophe",
+						"turkish_lowercase",
+						"turkish_stop",
+						"turkish_keywords",
+						"turkish_stemmer",
+						"my_shingle_filter"
+					]
+				}
+			}
+		}
+	},	
+	"mappings": {
+		"ray": {
+			"properties": {
+				"baslik": {
+					"type": "string",
+					"analyzer": "turkish",
+					"fields": {
+						"raw": {
+							"type": "string",
+							"index": "not_analyzed"
+						}
+					}					
+				},
+				"konu": {
+					"type": "string",
+					"analyzer": "keyword"					
+				},
+				"content": {
+					"type": "string",
+					"analyzer": "turkish",
+					"fields": {
+						"shingle": {
+							"type": "string",
+							"analyzer": "my_shingle_analyzer"
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+
+
+// Novel mappings
+PUT /book
+{
+  "settings": {
+    "number_of_shards": 1,
+    "number_of_replicas": 0,
+    "analysis": {
+      "filter": {
+        "my_shingle_filter": {
+          "type": "shingle",
+          "min_shingle_size": 2,
+          "max_shingle_size": 2,
+          "output_unigrams": false
+        },
+        "turkish_stop": {
+          "type": "stop",
+          "stopwords": "_turkish_"
+        },
+        "turkish_lowercase": {
+          "type": "lowercase",
+          "language": "turkish"
+        },
+        "turkish_keywords": {
+          "type": "keyword_marker",
+          "keywords": [
+            ""
+          ]
+        },
+        "turkish_stemmer": {
+          "type": "stemmer",
+          "language": "turkish"
+        }
+      },
+      "analyzer": {
+        "my_shingle_analyzer": {
+          "type": "custom",
+          "tokenizer": "standard",
+          "filter": [
+            "apostrophe",
+            "turkish_lowercase",
+            "turkish_stop",
+            "turkish_keywords",
+            "turkish_stemmer",
+            "my_shingle_filter"
+          ]
+        },
+        "turkish_simple": {
+          "type": "custom",
+          "tokenizer": "standard",
+          "filter": [
+            "apostrophe",
+            "turkish_lowercase"
+          ]
+        }
+      }
+    }
+  },
+  "mappings": {
+    "novel": {
+      "properties": {
+        "title": {
+          "type": "text",
+          "analyzer": "turkish",
+          "fields": {
+            "raw": {
+              "type": "text",
+              "analyzer": "turkish_simple"
+            }
+          }
+        },
+        "page": {
+          "type": "integer"
+        },
+        "year": {
+          "type": "integer"
+        },
+        "department": {
+          "type": "keyword"
+        },
+        "genre": {
+          "type": "keyword"
+        },
+        "category": {
+          "type": "keyword"
+        },
+        "content": {
+          "type": "text",
+          "analyzer": "turkish",
+          "fields": {
+            "bigrammed": {
+              "type": "text",
+              "analyzer": "my_shingle_analyzer"
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
