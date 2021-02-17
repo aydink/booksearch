@@ -165,7 +165,7 @@ func processBooks() {
 				bookName := f.Name()[0 : len(f.Name())-4]
 				//fmt.Println("bookName", bookName)
 
-				_, err = exec.Command("pdftotext", "-enc", "UTF-8", path, "text/"+md5hash+".txt").Output()
+				_, err = exec.Command("poppler/pdftotext", "-enc", "UTF-8", path, "text/"+md5hash+".txt").Output()
 				if err != nil {
 					//log.Fatalln(err)
 					log.Println(err, path)
@@ -211,7 +211,7 @@ func processTextFiles() {
 				//fmt.Println("bookName", bookName)
 
 				if _, err := os.Stat("text/" + md5hash + ".txt"); os.IsNotExist(err) {
-					_, err = exec.Command("pdftotext", "-enc", "UTF-8", path, "text/"+md5hash+".txt").Output()
+					_, err = exec.Command("poppler/pdftotext", "-enc", "UTF-8", path, "text/"+md5hash+".txt").Output()
 					if err != nil {
 						//log.Fatalln(err)
 						log.Println(err, path)

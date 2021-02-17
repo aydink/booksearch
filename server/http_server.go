@@ -150,7 +150,7 @@ func createImage(query string) {
 	//fmt.Println("hash:", hash, "page:", page, "file:", fileMap[hash])
 
 	if _, err := os.Stat("static/images/" + hash + "-" + page + ".png"); os.IsNotExist(err) {
-		_, err := exec.Command("pdftocairo", "-png", "-singlefile", "-f", page, "-l", page, "books/"+hash+".pdf", "static/images/"+hash+"-"+page).Output()
+		_, err := exec.Command("poppler/pdftocairo", "-png", "-singlefile", "-f", page, "-l", page, "books/"+hash+".pdf", "static/images/"+hash+"-"+page).Output()
 		if err != nil {
 			//log.Fatalln(err)
 			log.Println(err)

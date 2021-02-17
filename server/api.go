@@ -166,7 +166,7 @@ func processUploadedPdf(r *http.Request) (map[string]string, error) {
 func processPdfFile(book Book) error {
 
 	//_, err := exec.Command("pdftocairo", "-png", "-singlefile", "-f", page, "-l", page, fileMap[hash], "static/images/"+hash+"-"+page).Output()
-	output, err := exec.Command("pdfinfo", "books/"+book.Hash+".pdf").Output()
+	output, err := exec.Command("poppler/pdfinfo", "books/"+book.Hash+".pdf").Output()
 	if err != nil {
 		log.Println(err)
 		return err
@@ -183,7 +183,7 @@ func processPdfFile(book Book) error {
 	}
 
 	if _, err := os.Stat("books/" + book.Hash + ".txt"); os.IsNotExist(err) {
-		_, err = exec.Command("pdftotext", "-enc", "UTF-8", "books/"+book.Hash+".pdf", "books/"+book.Hash+".txt").Output()
+		_, err = exec.Command("poppler/pdftotext", "-enc", "UTF-8", "books/"+book.Hash+".pdf", "books/"+book.Hash+".txt").Output()
 		if err != nil {
 			//log.Fatalln(err)
 			log.Printf("PDF text extraction failed, file:%s.pdf, error:%s\n", err, book.Hash)
@@ -192,7 +192,7 @@ func processPdfFile(book Book) error {
 	}
 
 	if _, err := os.Stat("books/" + book.Hash + ".bbox.txt"); os.IsNotExist(err) {
-		_, err = exec.Command("pdftotext", "-enc", "UTF-8", "-bbox", "books/"+book.Hash+".pdf", "books/"+book.Hash+".bbox.txt").Output()
+		_, err = exec.Command("poppler/pdftotext", "-enc", "UTF-8", "-bbox", "books/"+book.Hash+".pdf", "books/"+book.Hash+".bbox.txt").Output()
 		if err != nil {
 			//log.Fatalln(err)
 			log.Printf("PDF payload extraction failed, file:%s.pdf, error:%s\n", err, book.Hash)

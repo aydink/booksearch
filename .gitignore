@@ -2,7 +2,6 @@ scripts/image/
 scripts/text/
 server/books/
 server/static/images/*.*
-server/data/badger/*.*
 .server
 .server.exe
 client/client
